@@ -12,12 +12,14 @@ import { builtinPresets } from "../src/presets.ts";
 
 const allowedValueExports = [
   "createSfxEngine",
+  "mutatePatch",
   "validatePatch",
   "defaultPatch",
   "BUILTIN_PRESET_NAMES",
   "builtinPresets",
   "loadPresets",
   "mergePresets",
+  "encodeWavPcm16",
   "SFX_WAVEFORMS",
 ] as const;
 

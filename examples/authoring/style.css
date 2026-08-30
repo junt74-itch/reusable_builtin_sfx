@@ -1,0 +1,313 @@
+:root {
+  color-scheme: dark;
+  font-family: system-ui, sans-serif;
+  line-height: 1.5;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: #111827;
+  color: #f3f4f6;
+}
+
+#app {
+  max-width: 56rem;
+  margin: 0 auto;
+  padding: 2rem 1.25rem 3rem;
+}
+
+h1 {
+  margin: 0 0 0.75rem;
+  font-size: 1.75rem;
+}
+
+.steps {
+  margin: 0 0 1rem;
+  padding-left: 1.25rem;
+  color: #cbd5e1;
+}
+
+.steps li + li {
+  margin-top: 0.2rem;
+}
+
+h2 {
+  margin: 0;
+  font-size: 1.15rem;
+}
+
+.meta {
+  margin: 0 0 0.5rem;
+  color: #cbd5e1;
+}
+
+.category-hint {
+  margin: -0.35rem 0 0;
+  color: #94a3b8;
+  font-size: 0.9rem;
+}
+
+.controls {
+  display: grid;
+  gap: 1rem;
+  padding: 1rem;
+  border: 1px solid #334155;
+  border-radius: 0.75rem;
+  background: #1e293b;
+}
+
+.field {
+  display: grid;
+  gap: 0.35rem;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.field > span,
+.field legend {
+  color: #cbd5e1;
+  font-size: 0.9rem;
+}
+
+.amounts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1.25rem;
+}
+
+.amounts label {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+select,
+button {
+  font: inherit;
+  color: inherit;
+}
+
+select {
+  padding: 0.55rem 0.7rem;
+  border: 1px solid #475569;
+  border-radius: 0.5rem;
+  background: #0f172a;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+button {
+  padding: 0.7rem 1rem;
+  border: 1px solid #334155;
+  border-radius: 0.5rem;
+  background: #1e293b;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #334155;
+}
+
+button:active {
+  transform: translateY(1px);
+}
+
+#draw,
+#copy-ts-selected {
+  border-color: #6366f1;
+  background: #312e81;
+}
+
+#draw:hover,
+#copy-ts-selected:hover {
+  background: #4338ca;
+}
+
+button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none;
+}
+
+button.secondary {
+  background: #0f172a;
+}
+
+.status {
+  min-height: 1.5rem;
+  margin: 0.85rem 0 0;
+  color: #a5b4fc;
+  font-size: 0.9rem;
+}
+
+.copy-section {
+  margin-top: 1.5rem;
+  padding: 1rem;
+  border: 1px solid #4338ca;
+  border-radius: 0.75rem;
+  background: #1e1b4b;
+}
+
+.copy-meta {
+  margin: 0.35rem 0 0.75rem;
+  color: #c7d2fe;
+  font-size: 0.9rem;
+}
+
+.copy-preview {
+  margin: 0;
+  padding: 0.85rem 1rem;
+  overflow: auto;
+  max-height: 22rem;
+  border-radius: 0.5rem;
+  background: #0f172a;
+  color: #e2e8f0;
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
+
+.copy-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 0.85rem;
+}
+
+.editor-section {
+  margin-top: 1.75rem;
+  padding: 1rem;
+  border: 1px solid #334155;
+  border-radius: 0.75rem;
+  background: #0f172a;
+}
+
+.editor-section summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.editor-meta {
+  margin: 0.35rem 0 1rem;
+  color: #94a3b8;
+  font-size: 0.9rem;
+}
+
+.editor-fields {
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+}
+
+.editor-fields.hidden,
+.editor-actions.hidden {
+  display: none;
+}
+
+.editor-field {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.editor-field > span {
+  color: #cbd5e1;
+  font-size: 0.85rem;
+}
+
+.editor-field em {
+  color: #64748b;
+  font-style: normal;
+}
+
+.editor-field input,
+.editor-field select {
+  width: 100%;
+  padding: 0.45rem 0.55rem;
+  border: 1px solid #475569;
+  border-radius: 0.45rem;
+  background: #1e293b;
+  color: inherit;
+  box-sizing: border-box;
+}
+
+.editor-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.history-section {
+  margin-top: 1.75rem;
+}
+
+.history-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.history {
+  display: grid;
+  gap: 0.75rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.history-item {
+  display: grid;
+  gap: 0.65rem;
+  padding: 0.85rem 1rem;
+  border: 1px solid #334155;
+  border-radius: 0.6rem;
+  background: #1e293b;
+  cursor: pointer;
+}
+
+.history-item.favorite {
+  border-color: #f59e0b;
+}
+
+.history-item.selected {
+  border-color: #6366f1;
+  box-shadow: inset 0 0 0 1px #6366f1;
+}
+
+.history-item .history-actions {
+  cursor: default;
+}
+
+.history-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.85rem;
+  color: #cbd5e1;
+  font-size: 0.9rem;
+}
+
+.history-meta code {
+  font-size: 0.85em;
+}
+
+.history-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.history-actions button {
+  padding: 0.4rem 0.65rem;
+  font-size: 0.9rem;
+}
+
+.empty {
+  color: #94a3b8;
+}

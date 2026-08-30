@@ -26,7 +26,7 @@ const sfx = await createSfxEngine({ audioContext: game.sound.context });
 await sfx.play("explosion.basic");
 ```
 
-主な API: `createSfxEngine`, `play`, `render`, `preload`, `clearCache`, `setMasterVolume`, `dispose`。builtin preset 名は `ui.select`, `player.jump`, `enemy.hit`, `explosion.basic` など 12 種（`BUILTIN_PRESET_NAMES`）。
+主な API: `createSfxEngine`, `play`, `render`, `preload`, `clearCache`, `setMasterVolume`, `dispose`, `mutatePatch`。builtin preset 名は `ui.select`, `player.jump`, `enemy.hit`, `explosion.basic` など 12 種（`BUILTIN_PRESET_NAMES`）。
 
 ## 必要環境
 
@@ -41,8 +41,9 @@ await sfx.play("explosion.basic");
 ```bash
 bun install
 bun run setup:emsdk
-bun run dev          # vanilla 例 → http://localhost:5173/
-bun run check        # test + typecheck + build
+bun run dev            # vanilla 例 → http://localhost:5173/
+bun run dev:authoring  # 作者向けガチャ → http://localhost:5175/
+bun run check          # test + typecheck + build
 ```
 
 Emscripten は `EMSDK` 環境変数を設定するか、`bun run setup:emsdk` で 6.0.8 を入れてください。
@@ -65,6 +66,31 @@ bun run dev:phaser
 
 `http://localhost:5174/` でキー（`1`–`5` または `U/J/H/E/R`）または画面上のボタンから同様の 5 アクションを試せます。`phaser@4.2.1` は **devDependency のみ** で、ライブラリ本体（`src/`）は Phaser に依存しません。詳細は [`examples/phaser4/README.md`](examples/phaser4/README.md)。
 
+### 作者向けガチャ（カテゴリ mutate）
+
+```bash
+bun run dev:authoring
+```
+
+`http://localhost:5175/` で 12 builtin preset をカテゴリに選び、Space または「引く」でガチャ再生します。画面上の `await sfx.play({ ... })` をコピーしてゲームに貼れます。詳細編集は折りたたみです。
+
+公開版は GitHub Pages です。
+
+```text
+https://junt74-itch.github.io/reusable_builtin_bfxr/
+```
+
+`main` への push で [Pages workflow](.github/workflows/pages.yml) が `bun run build:authoring` して更新します。初回だけリポジトリの Settings → Pages → Source を **GitHub Actions** にしてください。ローカル確認は `bun run build:authoring` のあと `bun run preview:authoring` です。
+
+### CLI mutate（preset から変種 JSON）
+
+```bash
+bun run sfx mutate presets/enemy.hit.json --count 20
+bun run sfx mutate presets/ui.select.json --count 3 --out tmp/ui-select
+```
+
+入力 JSON を `validatePatch` し、`mutatePatch` で決定的な変種を stdout（JSON 配列）または `--out` 配下の `name-0001.json` として出力します。`--amount` 省略時は 0.45（Medium）、seed は `0..count-1`（`--seed` 指定時はその値から連番）です。
+
 ## コマンド
 
 | コマンド | 内容 |
@@ -72,6 +98,10 @@ bun run dev:phaser
 | `bun run build:wasm` | C++ → `generated/sfx_synth.mjs` |
 | `bun run dev` | vanilla 例（port 5173） |
 | `bun run dev:phaser` | Phaser 4 例（port 5174） |
+| `bun run dev:authoring` | 作者向けガチャ（port 5175） |
+| `bun run build:authoring` | 作者向けガチャを GitHub Pages 用にビルド |
+| `bun run preview:authoring` | ビルド済み作者向けガチャを確認 |
+| `bun run sfx mutate <preset.json> --count N` | preset から変種 JSON を生成 |
 | `bun run test` | C++ テスト + TypeScript テスト |
 | `bun run typecheck` | `tsc --noEmit` |
 | `bun run build` | ライブラリ `dist/` をビルド |
@@ -82,7 +112,8 @@ bun run dev:phaser
 - Bfxr UI の完全再現
 - Bfxr / `.sfxr` 等のファイル互換
 - AudioWorklet による低遅延再生
-- Phase 5 の CLI / 作者向け GUI（MVP 外）
+- `bun run sfx random`（全ランダム生成 CLI）
+- `bun run sfx render`（WAV 書き出し CLI）
 
 ## ライセンス
 

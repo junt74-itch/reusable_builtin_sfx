@@ -44,6 +44,11 @@ T400 vanilla example     DONE
 T410 Phaser 4 example    DONE（T410 レビュー済み）
 T420 README（導入手順）   DONE
 T430 受け入れ検証        DONE（T430 レビュー済み）
+T500 mutatePatch API     DONE
+T510 作者向けガチャ GUI  DONE
+T520 作者向けスライダ    DONE
+T530 WAV export          DONE
+T540 CLI mutate          DONE
 ```
 
 依存の要点:
@@ -53,7 +58,8 @@ T430 受け入れ検証        DONE（T430 レビュー済み）
 - T140 は T130 のあと。44100 固定を独立して潰す
 - T320 より前に Public API の型を壊さない
 - T400 / T410 の前に T340 まで完了
-- Phase 5 の CLI / WAV 書き出しは本 WBS の対象外
+- Phase 5 は T500 から。mutate → 作者 GUI → スライダ → WAV → CLI の順
+- T500–T540 は DONE。`sfx random` / `sfx render` はまだ入れない
 
 ## いま通っているコマンド
 
@@ -66,6 +72,10 @@ bun run test
 bun run typecheck
 bun run build
 bun run dev
+bun run dev:authoring
+bun run build:authoring
+bun run preview:authoring
+bun run sfx mutate presets/ui.select.json --count 3
 bun run check
 ```
 
