@@ -1,5 +1,9 @@
 # T340 SfxEngine Public API
 
+## Status
+
+**DONE**
+
 ## Depends on
 
 - T020 T300 T310 T320 T330
@@ -37,9 +41,9 @@ dispose()
 
 ## Acceptance Criteria
 
-- [ ] `src/index.ts` の export が上記と型だけ
-- [ ] engine テストが play なしでも render/preload/dispose をカバー
-- [ ] 受け入れ条件「game 側が C++/Emscripten 詳細を知らずに利用可能」を export 一覧で満たす
+- [x] `src/index.ts` の export が上記と型だけ
+- [x] engine テストが play なしでも render/preload/dispose をカバー
+- [x] 受け入れ条件「game 側が C++/Emscripten 詳細を知らずに利用可能」を export 一覧で満たす
 
 ## Verify
 

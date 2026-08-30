@@ -1,55 +1,96 @@
 # reusable-procedural-sfx-wasm
 
-Bfxr / sfxr 系を参照した、ゲーム向け Procedural SFX エンジンです。C++ Synth Core を Emscripten で WASM 化し、TypeScript から Web Audio API で再生します。
+ゲーム向けの **再利用可能な procedural SFX ライブラリ** です。C++ Synth Core を Emscripten で WASM 化し、TypeScript から Web Audio API で再生します。
 
-ゲーム側は WASM の詳細を知らなくてよい API を目標にしています。
+**Bfxr / sfxr 系の UI やファイル形式の移植ではありません。** 参照したのはアルゴリズムの考え方だけで、ゲーム側は preset 名と patch オブジェクトだけを扱い、WASM や Emscripten の詳細は見えません。
+
+## 最小導入（ゲーム側）
 
 ```ts
+import { createSfxEngine } from "./path/to/dist/index.js";
+
 const sfx = await createSfxEngine();
+
 await sfx.play("ui.select");
-await sfx.play("enemy.hit", { seed: enemy.id });
+await sfx.play("player.jump");
+await sfx.play("enemy.hit", { seed: enemyId, volume: 0.8, pan: -0.2 });
+
+// 終了時
+sfx.dispose();
 ```
 
-現状のコアはビルド検証用の無音レンダラです。DSP 本体は `docs/plan/wbs/` のタスクを Composer 2.5 で順に実装します。
+Phaser 4 など既存の `AudioContext` を共有する場合:
+
+```ts
+const sfx = await createSfxEngine({ audioContext: game.sound.context });
+await sfx.play("explosion.basic");
+```
+
+主な API: `createSfxEngine`, `play`, `render`, `preload`, `clearCache`, `setMasterVolume`, `dispose`。builtin preset 名は `ui.select`, `player.jump`, `enemy.hit`, `explosion.basic` など 12 種（`BUILTIN_PRESET_NAMES`）。
 
 ## 必要環境
 
-- Bun 1.3+
-- Emscripten SDK **6.0.8**（`tooling/emsdk-version.txt`）
-- ネイティブ C++ テスト用に `g++` または `clang++`（Windows では MSYS2 `g++` を想定）
+- **Bun** 1.3+
+- **Emscripten SDK 6.0.8**（`tooling/emsdk-version.txt`）
+- ネイティブ C++ テスト用に `g++` または `clang++`（任意）
 
 `npm` / `yarn` / `pnpm` は使いません。
 
-## セットアップ
+## セットアップと確認
 
 ```bash
 bun install
 bun run setup:emsdk
+bun run dev          # vanilla 例 → http://localhost:5173/
+bun run check        # test + typecheck + build
 ```
 
-このマシンでは Emscripten を `C:\source\emsdk` に入れ、6.0.8 を activate 済みです。別環境では `EMSDK` を設定するか、上記コマンドで同じ版を入れてください。
+Emscripten は `EMSDK` 環境変数を設定するか、`bun run setup:emsdk` で 6.0.8 を入れてください。
+
+## 例
+
+### Vanilla（Phaser 非依存）
+
+```bash
+bun run dev
+```
+
+`http://localhost:5173/` で 5 ボタン（ui.select / player.jump / enemy.hit / explosion.basic / Random variant）から SE を試せます。
+
+### Phaser 4
+
+```bash
+bun run dev:phaser
+```
+
+`http://localhost:5174/` でキー（`1`–`5` または `U/J/H/E/R`）または画面上のボタンから同様の 5 アクションを試せます。`phaser@4.2.1` は **devDependency のみ** で、ライブラリ本体（`src/`）は Phaser に依存しません。詳細は [`examples/phaser4/README.md`](examples/phaser4/README.md)。
 
 ## コマンド
 
-```bash
-bun run build:wasm
-bun run dev
-bun run test
-bun run typecheck
-bun run build
-bun run check
-```
+| コマンド | 内容 |
+| --- | --- |
+| `bun run build:wasm` | C++ → `generated/sfx_synth.mjs` |
+| `bun run dev` | vanilla 例（port 5173） |
+| `bun run dev:phaser` | Phaser 4 例（port 5174） |
+| `bun run test` | C++ テスト + TypeScript テスト |
+| `bun run typecheck` | `tsc --noEmit` |
+| `bun run build` | ライブラリ `dist/` をビルド |
+| `bun run check` | test + typecheck + build |
 
-`bun test` は TypeScript テストランナーです。C++ テストまで含むフル検証は `bun run test` または `bun run check` を使います。
+## 非目標
 
-- `build:wasm` … C++ を SINGLE_FILE の `generated/sfx_synth.mjs` にビルド（`core/src/*.cpp` を自動収集）
-- `dev` … vanilla スモーク例（`http://localhost:5173`）
-- `test` … native C++ テスト + TypeScript テスト
-- `check` … test + typecheck + build
+- Bfxr UI の完全再現
+- Bfxr / `.sfxr` 等のファイル互換
+- AudioWorklet による低遅延再生
+- Phase 5 の CLI / 作者向け GUI（MVP 外）
 
-## ドキュメント
+## ライセンス
 
-- 進捗: `PROGRESS.md`
-- 方針: `docs/plan/reusable-procedural-sfx-wasm_IMPLEMENTATION_PLAN.md`
-- Composer 2.5 向け WBS: `docs/plan/wbs/README.md`
-- 単位系とアルゴリズム契約: `docs/reference/sfx-units-and-algorithm.md`
+参照元のライセンスは [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md) を参照してください。
+
+## 開発者向け
+
+- 進捗: [`PROGRESS.md`](PROGRESS.md)
+- 実装計画: [`docs/plan/reusable-procedural-sfx-wasm_IMPLEMENTATION_PLAN.md`](docs/plan/reusable-procedural-sfx-wasm_IMPLEMENTATION_PLAN.md)
+- Composer 向け WBS: [`docs/plan/wbs/README.md`](docs/plan/wbs/README.md)
+- 単位系: [`docs/reference/sfx-units-and-algorithm.md`](docs/reference/sfx-units-and-algorithm.md)

@@ -19,11 +19,13 @@
     "test": "bun run build:wasm && bun run test:core && bun test tests",
     "typecheck": "tsc --noEmit",
     "dev": "bun run build:wasm && vite",
+    "dev:phaser": "bun run build:wasm && vite --config vite.phaser.config.ts",
     "build": "bun run build:wasm && vite build && tsc -p tsconfig.build.json --emitDeclarationOnly",
     "check": "bun run test && bun run typecheck && bun run build"
   },
   "devDependencies": {
     "@types/bun": "1.4.0",
+    "phaser": "4.2.1",
     "typescript": "7.0.2",
     "vite": "8.2.2"
   }

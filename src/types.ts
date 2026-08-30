@@ -41,7 +41,7 @@ export interface RenderOptions {
 export interface CreateSfxEngineOptions {
   sampleRate?: number;
   presets?: Record<string, SfxPatchV1>;
-  audioContext?: AudioContext;
+  audioContext?: AudioContext | undefined;
 }
 
 export interface SfxEngine {

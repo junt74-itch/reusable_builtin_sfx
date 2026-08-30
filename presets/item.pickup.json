@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "waveform": "square",
+  "baseFrequency": 523,
+  "frequencySlide": 2,
+  "frequencyDeltaSlide": 0,
+  "attack": 0,
+  "sustain": 0.02,
+  "decay": 0.06,
+  "vibratoDepth": 0,
+  "vibratoSpeed": 0,
+  "duty": 0.35,
+  "masterVolume": 0.45
+}

@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "waveform": "noise",
+  "baseFrequency": 180,
+  "frequencySlide": 0,
+  "frequencyDeltaSlide": 0,
+  "attack": 0,
+  "sustain": 0.02,
+  "decay": 0.1,
+  "vibratoDepth": 0,
+  "vibratoSpeed": 0,
+  "lowPassCutoff": 0.2,
+  "masterVolume": 0.55
+}

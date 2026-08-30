@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "waveform": "sine",
+  "baseFrequency": 880,
+  "frequencySlide": 0,
+  "frequencyDeltaSlide": 0,
+  "attack": 0,
+  "sustain": 0.03,
+  "decay": 0.04,
+  "vibratoDepth": 0,
+  "vibratoSpeed": 0,
+  "masterVolume": 0.45
+}

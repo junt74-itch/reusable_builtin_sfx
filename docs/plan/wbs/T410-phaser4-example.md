@@ -1,5 +1,9 @@
 # T410 Phaser 4 example
 
+## Status
+
+**DONE**
+
 ## Depends on
 
 - T340 T400
@@ -35,9 +39,9 @@ Phaser 4.2.1（姉妹リポジトリ `reusable-phaser4-window-system` と同じ�
 
 ## Acceptance Criteria
 
-- [ ] `src/` の `bun run build` 成果物に phaser が含まれない
-- [ ] `package.json` の `dependencies` が空のまま（phaser は devDependencies）
-- [ ] 5 アクションが操作できる
+- [x] `src/` の `bun run build` 成果物に phaser が含まれない
+- [x] `package.json` の `dependencies` が空のまま（phaser は devDependencies）
+- [x] 5 アクションが操作できる
 
 ## Verify
 

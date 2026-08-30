@@ -1,5 +1,9 @@
 # T420 README 導入手順
 
+## Status
+
+**DONE**
+
 ## Depends on
 
 - T340 T400 T410
@@ -32,8 +36,8 @@
 
 ## Acceptance Criteria
 
-- [ ] 最小サンプルが README だけでコピーできる
-- [ ] npm/yarn/pnpm 手順が無い
+- [x] 最小サンプルが README だけでコピーできる
+- [x] npm/yarn/pnpm 手順が無い
 
 ## Verify
 

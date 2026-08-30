@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "waveform": "saw",
+  "baseFrequency": 330,
+  "frequencySlide": 4,
+  "frequencyDeltaSlide": 0,
+  "attack": 0,
+  "sustain": 0.03,
+  "decay": 0.08,
+  "vibratoDepth": 0,
+  "vibratoSpeed": 0,
+  "duty": 0.5,
+  "masterVolume": 0.5
+}

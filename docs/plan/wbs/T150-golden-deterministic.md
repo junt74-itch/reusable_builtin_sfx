@@ -1,5 +1,9 @@
 # T150 Golden / 決定性
 
+## Status
+
+**DONE**
+
 ## Depends on
 
 - T140
@@ -27,8 +31,8 @@
 
 ## Acceptance Criteria
 
-- [ ] 決定性テストが C++ と TS の両方にある
-- [ ] noise + seed 違いのテストがある
+- [x] 決定性テストが C++ と TS の両方にある
+- [x] noise + seed 違いのテストがある
 
 ## Verify
 

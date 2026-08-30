@@ -10,7 +10,11 @@ extern "C" {
 
 void* create_context() { return new SfxContext(); }
 
-void destroy_context(void* ctx) { delete static_cast<SfxContext*>(ctx); }
+void destroy_context(void* ctx) {
+  if (ctx != nullptr) {
+    delete static_cast<SfxContext*>(ctx);
+  }
+}
 
 float* render_patch(void* ctx, const float* packed, int packed_len, int sample_rate,
                     std::uint32_t seed, int* out_len) {

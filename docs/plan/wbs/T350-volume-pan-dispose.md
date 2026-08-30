@@ -16,6 +16,19 @@
 
 - 変更: `src/SfxEngine.ts`, `src/AudioBackend.ts`, `tests/engine.test.ts`
 
+## T340 レビュー時点の現状
+
+すでに入っているもの:
+
+- play の volume は `>= 0`、pan は `-1..1`（`AudioBackend`）
+- dispose は冪等。WASM context は destroy 済み
+- `clearCache` / `render` は dispose 後に throw
+
+足りないもの:
+
+- `setMasterVolume` は下限 0 のみ。**上限 1 にも clamp** する
+- dispose 後の `play` / `preload` / `setMasterVolume` / `clearCache` を engine テストで全部確認する
+
 ## Spec
 
 - `setMasterVolume` は 0..1 に clamp、master Gain に反映

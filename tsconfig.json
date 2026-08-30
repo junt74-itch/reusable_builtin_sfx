@@ -18,5 +18,5 @@
     "skipLibCheck": true,
     "types": ["bun"]
   },
-  "include": ["src", "examples", "tests", "scripts", "generated", "vite.config.ts"]
+  "include": ["src", "examples", "tests", "scripts", "generated", "vite.config.ts", "vite.phaser.config.ts"]
 }

@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "waveform": "triangle",
+  "baseFrequency": 440,
+  "frequencySlide": 0,
+  "frequencyDeltaSlide": 0,
+  "attack": 0,
+  "sustain": 0.08,
+  "decay": 0.08,
+  "vibratoDepth": 0.35,
+  "vibratoSpeed": 8,
+  "masterVolume": 0.55
+}

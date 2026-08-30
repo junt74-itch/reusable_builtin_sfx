@@ -10,6 +10,8 @@
 #include "sfx_synth.hpp"
 
 #include <cmath>
+#include <cstdint>
+#include <cstring>
 #include <iostream>
 #include <vector>
 
@@ -123,6 +125,44 @@ float estimate_frequency_zero_crossings(
   }
 
   return static_cast<float>(sampleRate) / avg_period;
+}
+
+bool pcm_equal(const std::vector<float>& a, const std::vector<float>& b) {
+  if (a.size() != b.size()) {
+    return false;
+  }
+  for (std::size_t i = 0; i < a.size(); ++i) {
+    if (a[i] != b[i]) {
+      return false;
+    }
+  }
+  return true;
+}
+
+std::uint32_t fnv1a_pcm_hash(const std::vector<float>& pcm) {
+  std::uint32_t hash = 2166136261u;
+  for (float sample : pcm) {
+    std::uint32_t bits = 0;
+    std::memcpy(&bits, &sample, sizeof(bits));
+    hash ^= bits;
+    hash *= 16777619u;
+  }
+  hash ^= static_cast<std::uint32_t>(pcm.size());
+  hash *= 16777619u;
+  return hash;
+}
+
+SfxPatch make_golden_patch() {
+  SfxPatch patch;
+  patch.waveform = SfxWaveform::Noise;
+  patch.baseFrequency = 440.0f;
+  patch.attack = 0.0f;
+  patch.sustain = 0.05f;
+  patch.decay = 0.05f;
+  patch.masterVolume = 0.5f;
+  patch.lowPassCutoff = 1.0f;
+  patch.highPassCutoff = 0.0f;
+  return patch;
 }
 
 }  // namespace
@@ -463,6 +503,24 @@ int main() {
     CHECK(freq_48k > 0.0f);
     CHECK(std::abs(freq_44k - 440.0f) / 440.0f < 0.02f);
     CHECK(std::abs(freq_48k - 440.0f) / 440.0f < 0.02f);
+  }
+
+  {
+    const SfxPatch patch = make_golden_patch();
+    const auto first = render(patch, 48000, 12345);
+    const auto second = render(patch, 48000, 12345);
+    CHECK(pcm_equal(first, second));
+    CHECK(fnv1a_pcm_hash(first) == fnv1a_pcm_hash(second));
+
+    constexpr int kSnapshotCount = 16;
+    CHECK(static_cast<int>(first.size()) >= kSnapshotCount);
+    for (int i = 0; i < kSnapshotCount; ++i) {
+      CHECK(first[static_cast<std::size_t>(i)] == second[static_cast<std::size_t>(i)]);
+    }
+
+    const auto other_seed = render(patch, 48000, 54321);
+    CHECK(!pcm_equal(first, other_seed));
+    CHECK(fnv1a_pcm_hash(first) != fnv1a_pcm_hash(other_seed));
   }
 
   if (failures != 0) {

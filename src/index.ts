@@ -1,12 +1,12 @@
 export { createSfxEngine } from "./SfxEngine.ts";
 export { validatePatch } from "./patch.ts";
 export {
-  defaultPatch,
-  packPatch,
-  PACKED_PATCH_FIELD_ORDER,
-  SFX_PACKED_FLOAT_COUNT,
-  SFX_WAVEFORMS,
-} from "./types.ts";
+  BUILTIN_PRESET_NAMES,
+  builtinPresets,
+  loadPresets,
+  mergePresets,
+} from "./presets.ts";
+export { defaultPatch, SFX_WAVEFORMS } from "./types.ts";
 export type {
   CreateSfxEngineOptions,
   PlayOptions,
@@ -15,3 +15,4 @@ export type {
   SfxPatchV1,
   SfxWaveform,
 } from "./types.ts";
+export type { BuiltinPresetName } from "./presets.ts";

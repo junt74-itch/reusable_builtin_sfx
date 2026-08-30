@@ -14,10 +14,12 @@ export class AudioBackend {
   }
 
   setMasterVolume(volume: number): void {
-    this.master.gain.value = volume;
+    this.assertOpen();
+    this.master.gain.value = Math.max(0, Math.min(1, volume));
   }
 
   async resume(): Promise<void> {
+    this.assertOpen();
     if (this.context.state === "suspended") {
       await this.context.resume();
     }
@@ -25,15 +27,25 @@ export class AudioBackend {
 
   play(pcm: Float32Array, sampleRate: number, volume = 1, pan = 0): void {
     this.assertOpen();
-    const buffer = this.context.createBuffer(1, Math.max(1, pcm.length), sampleRate);
-    const channel = buffer.getChannelData(0);
-    channel.set(pcm);
+    if (pcm.length === 0 || sampleRate <= 0) {
+      return;
+    }
+
+    const clampedVolume = Math.max(0, volume);
+    const clampedPan = Math.max(-1, Math.min(1, pan));
+
+    const buffer = this.context.createBuffer(1, pcm.length, sampleRate);
+    buffer.getChannelData(0).set(pcm);
+
     const source = this.context.createBufferSource();
     source.buffer = buffer;
+
     const gain = this.context.createGain();
-    gain.gain.value = volume;
+    gain.gain.value = clampedVolume;
+
     const panner = this.context.createStereoPanner();
-    panner.pan.value = pan;
+    panner.pan.value = clampedPan;
+
     source.connect(gain);
     gain.connect(panner);
     panner.connect(this.master);

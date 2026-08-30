@@ -32,18 +32,18 @@ T110 Filters             DONE
 T120 Phaser              DONE（T120 レビュー済み）
 T130 Render 統合         DONE
 T140 sampleRate 非依存   DONE（T140 レビュー済み）
-T150 Golden / 決定性     ← 次
-T200 WASM エラー処理
-T300 WasmBridge 完成
-T310 AudioBackend 完成
-T320 Preset ローダ
-T330 Cache
-T340 SfxEngine Public API
-T350 volume / pan / dispose
-T400 vanilla example
-T410 Phaser 4 example
-T420 README（導入手順）
-T430 受け入れ検証
+T150 Golden / 決定性     DONE
+T200 WASM エラー処理     DONE
+T300 WasmBridge 完成     DONE
+T310 AudioBackend 完成   DONE
+T320 Preset ローダ       DONE
+T330 Cache               DONE
+T340 SfxEngine Public API DONE（T340 レビュー済み）
+T350 volume / pan / dispose DONE
+T400 vanilla example     DONE
+T410 Phaser 4 example    DONE（T410 レビュー済み）
+T420 README（導入手順）   DONE
+T430 受け入れ検証        DONE（T430 レビュー済み）
 ```
 
 依存の要点:
