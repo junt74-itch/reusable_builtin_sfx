@@ -77,7 +77,7 @@ bun run dev:authoring
 公開版は GitHub Pages です。
 
 ```text
-https://junt74-itch.github.io/reusable_builtin_bfxr/
+https://junt74-itch.github.io/reusable_builtin_sfx/
 ```
 
 `main` への push で [Pages workflow](.github/workflows/pages.yml) が `bun run build:authoring` して更新します。初回だけリポジトリの Settings → Pages → Source を **GitHub Actions** にしてください。ローカル確認は `bun run build:authoring` のあと `bun run preview:authoring` です。
