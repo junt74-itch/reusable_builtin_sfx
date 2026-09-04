@@ -11,8 +11,8 @@
       <h1>効果音ガチャ</h1>
       <ol class="steps">
         <li>カテゴリを選んで <strong>引く</strong>（Space）</li>
+        <li><strong>スライダー</strong>で音を調整する</li>
         <li>気に入ったら <strong>このコードをコピー</strong> してゲームに貼る</li>
-        <li>必要なら下の <strong>詳細を編集</strong></li>
       </ol>
       <p class="meta">sampleRate: <strong id="sample-rate"></strong> Hz</p>
 
@@ -31,6 +31,15 @@
         <div class="actions">
           <button type="button" id="draw">引く</button>
           <button type="button" id="play-base" class="secondary">ベースを再生</button>
+        </div>
+      </section>
+
+      <section class="editor-section" aria-label="スライダーで調整">
+        <h2>スライダーで調整</h2>
+        <p id="editor-meta" class="editor-meta">履歴から 1 件選ぶか、引いた直後にスライダーで調整できます。単位は Hz / 秒です。</p>
+        <div id="editor-fields" class="editor-fields hidden"></div>
+        <div id="editor-actions" class="editor-actions hidden">
+          <button type="button" id="add-edited">手編集を履歴に残す</button>
         </div>
       </section>
 
@@ -55,14 +64,6 @@
         <ul id="history" class="history"></ul>
       </section>
 
-      <details class="editor-section" aria-label="詳細を編集">
-        <summary>詳細を編集</summary>
-        <p id="editor-meta" class="editor-meta">履歴から 1 件選ぶか、引いた直後に編集できます。</p>
-        <div id="editor-fields" class="editor-fields hidden"></div>
-        <div id="editor-actions" class="editor-actions hidden">
-          <button type="button" id="add-edited">手編集を履歴に残す</button>
-        </div>
-      </details>
     </main>
     <script type="module" src="./main.ts"></script>
   </body>

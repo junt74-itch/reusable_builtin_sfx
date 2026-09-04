@@ -35,6 +35,12 @@ type NumericFieldDef = {
   min: number;
   max: number;
   step: number;
+  scale?: "linear" | "log";
+};
+
+type FieldGroup = {
+  title: string;
+  fields: NumericFieldDef[];
 };
 
 const CATEGORY_LABELS: Record<BuiltinPresetName, string> = {
@@ -58,26 +64,51 @@ const amountLabels: Record<string, string> = {
   "0.75": "強",
 };
 
-const NUMERIC_FIELDS: NumericFieldDef[] = [
-  { key: "baseFrequency", label: "基本周波数", unit: "Hz", min: 20, max: 20000, step: 1 },
-  { key: "frequencySlide", label: "周波数スライド", unit: "oct/s", min: -8, max: 8, step: 0.01 },
-  { key: "frequencyDeltaSlide", label: "スライド変化", unit: "oct/s²", min: -8, max: 8, step: 0.01 },
-  { key: "attack", label: "アタック", unit: "s", min: 0, max: 5, step: 0.001 },
-  { key: "sustain", label: "サステイン", unit: "s", min: 0, max: 5, step: 0.001 },
-  { key: "decay", label: "ディケイ", unit: "s", min: 0, max: 5, step: 0.001 },
-  { key: "vibratoDepth", label: "ビブラート深さ", unit: "0..1", min: 0, max: 1, step: 0.01 },
-  { key: "vibratoSpeed", label: "ビブラート速度", unit: "Hz", min: 0, max: 100, step: 0.1 },
-  { key: "duty", label: "デューティ", unit: "0..1", min: 0, max: 1, step: 0.01 },
-  { key: "dutySweep", label: "デューティ変化", unit: "1/s", min: -10, max: 10, step: 0.01 },
-  { key: "repeatSpeed", label: "リピート", unit: "1/s", min: 0, max: 20, step: 0.01 },
-  { key: "lowPassCutoff", label: "ローパス", unit: "0..1", min: 0, max: 1, step: 0.01 },
-  { key: "lowPassSweep", label: "ローパス変化", unit: "1/s", min: -10, max: 10, step: 0.01 },
-  { key: "highPassCutoff", label: "ハイパス", unit: "0..1", min: 0, max: 1, step: 0.01 },
-  { key: "highPassSweep", label: "ハイパス変化", unit: "1/s", min: -10, max: 10, step: 0.01 },
-  { key: "phaserOffset", label: "フェイザー", unit: "0..1", min: 0, max: 1, step: 0.01 },
-  { key: "phaserSweep", label: "フェイザー変化", unit: "1/s", min: -10, max: 10, step: 0.01 },
-  { key: "masterVolume", label: "音量", unit: "0..1", min: 0, max: 1, step: 0.01 },
+const FIELD_GROUPS: FieldGroup[] = [
+  {
+    title: "高さ",
+    fields: [
+      { key: "baseFrequency", label: "基本周波数", unit: "Hz", min: 20, max: 8000, step: 1, scale: "log" },
+      { key: "frequencySlide", label: "周波数スライド", unit: "oct/s", min: -8, max: 8, step: 0.01 },
+      { key: "frequencyDeltaSlide", label: "スライド変化", unit: "oct/s²", min: -8, max: 8, step: 0.01 },
+    ],
+  },
+  {
+    title: "長さ",
+    fields: [
+      { key: "attack", label: "アタック", unit: "s", min: 0, max: 1, step: 0.001 },
+      { key: "sustain", label: "サステイン", unit: "s", min: 0, max: 1, step: 0.001 },
+      { key: "decay", label: "ディケイ", unit: "s", min: 0, max: 2, step: 0.001 },
+    ],
+  },
+  {
+    title: "音色",
+    fields: [
+      { key: "duty", label: "デューティ", unit: "0..1", min: 0, max: 1, step: 0.01 },
+      { key: "dutySweep", label: "デューティ変化", unit: "1/s", min: -4, max: 4, step: 0.01 },
+      { key: "vibratoDepth", label: "ビブラート深さ", unit: "0..1", min: 0, max: 1, step: 0.01 },
+      { key: "vibratoSpeed", label: "ビブラート速度", unit: "Hz", min: 0, max: 40, step: 0.1 },
+      { key: "repeatSpeed", label: "リピート", unit: "1/s", min: 0, max: 20, step: 0.01 },
+    ],
+  },
+  {
+    title: "フィルタ / フェイザー",
+    fields: [
+      { key: "lowPassCutoff", label: "ローパス", unit: "0..1", min: 0, max: 1, step: 0.01 },
+      { key: "lowPassSweep", label: "ローパス変化", unit: "1/s", min: -4, max: 4, step: 0.01 },
+      { key: "highPassCutoff", label: "ハイパス", unit: "0..1", min: 0, max: 1, step: 0.01 },
+      { key: "highPassSweep", label: "ハイパス変化", unit: "1/s", min: -4, max: 4, step: 0.01 },
+      { key: "phaserOffset", label: "フェイザー", unit: "0..1", min: 0, max: 1, step: 0.01 },
+      { key: "phaserSweep", label: "フェイザー変化", unit: "1/s", min: -4, max: 4, step: 0.01 },
+    ],
+  },
+  {
+    title: "音量",
+    fields: [{ key: "masterVolume", label: "音量", unit: "0..1", min: 0, max: 1, step: 0.01 }],
+  },
 ];
+
+const NUMERIC_FIELDS = FIELD_GROUPS.flatMap((group) => group.fields);
 
 const categoryEl = document.querySelector("#category");
 const categoryHintEl = document.querySelector("#category-hint");
@@ -138,6 +169,7 @@ const copyPreview = copyPreviewEl;
 const copyMeta = copyMetaEl;
 
 const waveformSelect = document.createElement("select");
+const sliderInputs = new Map<NumericFieldKey, HTMLInputElement>();
 const numericInputs = new Map<NumericFieldKey, HTMLInputElement>();
 
 let playTimer: ReturnType<typeof setTimeout> | undefined;
@@ -411,9 +443,69 @@ function readNumericValue(patch: SfxPatchV1, key: NumericFieldKey): number {
   return typeof value === "number" ? value : 0;
 }
 
+function clamp(value: number, min: number, max: number): number {
+  return Math.min(max, Math.max(min, value));
+}
+
+function formatFieldValue(field: NumericFieldDef, value: number): string {
+  if (field.step >= 1) {
+    return String(Math.round(value));
+  }
+  const digits = field.step >= 0.1 ? 1 : field.step >= 0.01 ? 2 : 3;
+  return value.toFixed(digits);
+}
+
+function valueToSlider(field: NumericFieldDef, value: number): number {
+  const clamped = clamp(value, field.min, field.max);
+  if (field.scale !== "log") {
+    return clamped;
+  }
+  const min = Math.log(field.min);
+  const max = Math.log(field.max);
+  return (Math.log(Math.max(field.min, clamped)) - min) / (max - min);
+}
+
+function sliderToValue(field: NumericFieldDef, sliderValue: number): number {
+  if (field.scale !== "log") {
+    return sliderValue;
+  }
+  const min = Math.log(field.min);
+  const max = Math.log(field.max);
+  return Math.exp(min + clamp(sliderValue, 0, 1) * (max - min));
+}
+
+function writeFieldControls(field: NumericFieldDef, value: number): void {
+  const slider = sliderInputs.get(field.key);
+  const number = numericInputs.get(field.key);
+  if (slider) {
+    slider.value = String(valueToSlider(field, value));
+  }
+  if (number) {
+    number.value = formatFieldValue(field, value);
+  }
+}
+
+function applyNumericField(field: NumericFieldDef, rawValue: number): void {
+  if (suppressEditorEvents || !workingPatch || !Number.isFinite(rawValue)) {
+    return;
+  }
+  const nextValue = clamp(rawValue, field.min, field.max);
+  workingPatch = validatePatch({
+    ...workingPatch,
+    [field.key]: nextValue,
+  });
+  writeFieldControls(field, nextValue);
+  syncCopyPreview();
+  renderHistory(history);
+  schedulePlayWorkingPatch(field.label);
+}
+
 function buildEditorControls(): void {
   editorFields.replaceChildren();
 
+  const pitchGroup = document.createElement("div");
+  pitchGroup.className = "editor-group";
+  pitchGroup.innerHTML = `<h3>波形</h3>`;
   const waveformField = document.createElement("label");
   waveformField.className = "editor-field";
   waveformField.innerHTML = `<span>波形</span>`;
@@ -425,7 +517,8 @@ function buildEditorControls(): void {
     waveformSelect.append(option);
   }
   waveformField.append(waveformSelect);
-  editorFields.append(waveformField);
+  pitchGroup.append(waveformField);
+  editorFields.append(pitchGroup);
 
   waveformSelect.addEventListener("change", () => {
     if (suppressEditorEvents || !workingPatch) {
@@ -440,38 +533,48 @@ function buildEditorControls(): void {
     schedulePlayWorkingPatch("波形");
   });
 
-  for (const field of NUMERIC_FIELDS) {
-    const label = document.createElement("label");
-    label.className = "editor-field";
-    label.innerHTML = `<span>${field.label} <em>(${field.unit})</em></span>`;
+  for (const group of FIELD_GROUPS) {
+    const groupEl = document.createElement("div");
+    groupEl.className = "editor-group";
+    groupEl.innerHTML = `<h3>${group.title}</h3>`;
 
-    const input = document.createElement("input");
-    input.type = "number";
-    input.min = String(field.min);
-    input.max = String(field.max);
-    input.step = String(field.step);
-    input.dataset.key = field.key;
-    numericInputs.set(field.key, input);
+    for (const field of group.fields) {
+      const label = document.createElement("label");
+      label.className = "editor-field";
+      label.innerHTML = `<span>${field.label} <em>(${field.unit})</em></span>`;
 
-    input.addEventListener("input", () => {
-      if (suppressEditorEvents || !workingPatch) {
-        return;
-      }
-      const nextValue = Number(input.value);
-      if (!Number.isFinite(nextValue)) {
-        return;
-      }
-      workingPatch = validatePatch({
-        ...workingPatch,
-        [field.key]: nextValue,
+      const controls = document.createElement("div");
+      controls.className = "editor-field-controls";
+
+      const slider = document.createElement("input");
+      slider.type = "range";
+      slider.min = field.scale === "log" ? "0" : String(field.min);
+      slider.max = field.scale === "log" ? "1" : String(field.max);
+      slider.step = field.scale === "log" ? "0.001" : String(field.step);
+      slider.dataset.key = field.key;
+      sliderInputs.set(field.key, slider);
+
+      const number = document.createElement("input");
+      number.type = "number";
+      number.min = String(field.min);
+      number.max = String(field.max);
+      number.step = String(field.step);
+      number.dataset.key = field.key;
+      numericInputs.set(field.key, number);
+
+      slider.addEventListener("input", () => {
+        applyNumericField(field, sliderToValue(field, Number(slider.value)));
       });
-      syncCopyPreview();
-      renderHistory(history);
-      schedulePlayWorkingPatch(field.label);
-    });
+      number.addEventListener("input", () => {
+        applyNumericField(field, Number(number.value));
+      });
 
-    label.append(input);
-    editorFields.append(label);
+      controls.append(slider, number);
+      label.append(controls);
+      groupEl.append(label);
+    }
+
+    editorFields.append(groupEl);
   }
 }
 
@@ -480,7 +583,7 @@ function syncEditorControls(): void {
   if (!workingPatch) {
     editorFields.classList.add("hidden");
     editorActions.classList.add("hidden");
-    editorMeta.textContent = "履歴から 1 件選ぶか、引いた直後に編集できます。";
+    editorMeta.textContent = "履歴から 1 件選ぶか、引いた直後にスライダーで調整できます。単位は Hz / 秒です。";
     suppressEditorEvents = false;
     syncCopyPreview();
     return;
@@ -490,14 +593,11 @@ function syncEditorControls(): void {
   editorActions.classList.remove("hidden");
   waveformSelect.value = workingPatch.waveform;
   for (const field of NUMERIC_FIELDS) {
-    const input = numericInputs.get(field.key);
-    if (input) {
-      input.value = String(readNumericValue(workingPatch, field.key));
-    }
+    writeFieldControls(field, readNumericValue(workingPatch, field.key));
   }
 
   const category = selectedCategoryName ?? selectedCategory();
-  editorMeta.textContent = `編集中: ${categoryLabel(category)}（${category}）。値を変えると再生され、上のコードも更新されます。`;
+  editorMeta.textContent = `編集中: ${categoryLabel(category)}（${category}）。スライダーを動かすと再生され、下のコードも更新されます。`;
   suppressEditorEvents = false;
   syncCopyPreview();
 }

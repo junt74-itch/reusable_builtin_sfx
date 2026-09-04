@@ -72,7 +72,7 @@ bun run dev:phaser
 bun run dev:authoring
 ```
 
-`http://localhost:5175/` で 12 builtin preset をカテゴリに選び、Space または「引く」でガチャ再生します。画面上の `await sfx.play({ ... })` をコピーしてゲームに貼れます。詳細編集は折りたたみです。
+`http://localhost:5175/` で 12 builtin preset をカテゴリに選び、Space または「引く」でガチャ再生します。続けてスライダーで Hz / 秒のまま調整し、画面上の `await sfx.play({ ... })` をコピーしてゲームに貼れます。
 
 公開版は GitHub Pages です。
 
