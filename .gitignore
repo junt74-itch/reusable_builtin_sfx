@@ -13,3 +13,5 @@ generated/*
 !generated/.gitkeep
 !generated/sfx_synth.mjs.d.ts
 
+
+NUL
