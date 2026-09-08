@@ -213,13 +213,28 @@ describe("§21 acceptance criteria", () => {
     backend.dispose();
   });
 
-  test("README contains a copy-pasteable minimal sample", async () => {
+  test("README contains a copy-pasteable minimal sample and package installation", async () => {
     const readme = await Bun.file("README.md").text();
     expect(readme.includes("createSfxEngine")).toBe(true);
     expect(readme.includes("sfx.play")).toBe(true);
     expect(readme.includes("bun run dev")).toBe(true);
     expect(readme.includes("bun run dev:phaser")).toBe(true);
-    expect(readme.toLowerCase().includes("npm install")).toBe(false);
+    expect(readme.toLowerCase().includes("npm install reusable-procedural-sfx-wasm")).toBe(true);
+    expect(readme.includes("build:wasm` はフレームワークのリリース生成専用")).toBe(true);
+  });
+
+  test("npm packaging publishes the prebuilt distribution without consumer build hooks", async () => {
+    const pkg = JSON.parse(await Bun.file("package.json").text()) as {
+      private?: boolean;
+      files?: string[];
+      scripts?: Record<string, string>;
+    };
+
+    expect(pkg.private).toBe(false);
+    expect(pkg.files).toContain("dist");
+    expect(pkg.scripts?.prepack).toBe("bun run build");
+    expect(pkg.scripts?.postinstall).toBeUndefined();
+    expect(pkg.scripts?.prepare).toBeUndefined();
   });
 
   test("vanilla example exposes multiple preset buttons", async () => {

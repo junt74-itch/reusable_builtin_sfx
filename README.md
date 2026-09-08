@@ -7,7 +7,7 @@
 ## 最小導入（ゲーム側）
 
 ```ts
-import { createSfxEngine } from "./path/to/dist/index.js";
+import { createSfxEngine } from "reusable-procedural-sfx-wasm";
 
 const sfx = await createSfxEngine();
 
@@ -49,13 +49,23 @@ await sfx.play("explosion.basic");
 
 主な API: `createSfxEngine`, `play`, `render`, `preload`, `clearCache`, `registerWavetable`, `unregisterWavetable`, `clearWavetables`, `setMasterVolume`, `dispose`, `mutatePatch`。builtin preset はゲーム向け 12 種（`ui.select`, `player.jump`, `enemy.hit`, `explosion.basic` など）に加え、wavetable 試聴用 demo preset 3 種（`wavetable.sineish` 等、`BUILTIN_PRESET_NAMES` 参照）。
 
-## 必要環境
+## パッケージ利用時の要件
+
+- Web Audio API を利用できるブラウザ環境
+
+WASM は公開パッケージの `dist/` に同梱されます。ゲーム側は通常どおり `npm` / `yarn` / `pnpm` / `bun` でパッケージを導入するだけでよく、Emscripten や `bun run build:wasm` は不要です。
+
+```bash
+npm install reusable-procedural-sfx-wasm
+```
+
+## フレームワーク開発時の要件
 
 - **Bun** 1.3+
 - **Emscripten SDK 6.0.8**（`tooling/emsdk-version.txt`）
 - ネイティブ C++ テスト用に `g++` または `clang++`（任意）
 
-`npm` / `yarn` / `pnpm` は使いません。
+`build:wasm` はフレームワークのリリース生成専用です。`prepack` が `bun run build` を実行し、WASM を埋め込んだ `dist/index.js` と `dist/sfx_synth-*.js` を npm tarball に含めます。
 
 ## セットアップと確認
 
@@ -126,6 +136,7 @@ bun run sfx mutate presets/ui.select.json --count 3 --out tmp/ui-select
 | `bun run test` | C++ テスト + TypeScript テスト |
 | `bun run typecheck` | `tsc --noEmit` |
 | `bun run build` | ライブラリ `dist/` をビルド |
+| `npm pack` | `prepack` 経由で、WASM 同梱の npm tarball を生成 |
 | `bun run check` | test + typecheck + build |
 
 ## 非目標

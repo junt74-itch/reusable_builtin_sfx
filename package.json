@@ -1,9 +1,16 @@
 {
   "name": "reusable-procedural-sfx-wasm",
   "version": "0.1.0",
-  "private": true,
+  "private": false,
   "type": "module",
   "sideEffects": false,
+  "files": [
+    "dist",
+    "README.md",
+    "THIRD_PARTY_NOTICES.md",
+    "licenses"
+  ],
+  "main": "./dist/index.js",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
@@ -25,6 +32,7 @@
     "preview:authoring": "vite preview --config vite.authoring.config.ts",
     "sfx": "bun scripts/sfx-cli.ts",
     "build": "bun run build:wasm && vite build && tsc -p tsconfig.build.json --emitDeclarationOnly",
+    "prepack": "bun run build",
     "check": "bun run test && bun run typecheck && bun run build"
   },
   "devDependencies": {
