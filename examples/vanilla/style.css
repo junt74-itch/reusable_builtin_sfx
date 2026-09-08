@@ -38,6 +38,24 @@ h1 {
   gap: 0.75rem;
 }
 
+.section-title {
+  margin: 2rem 0 0.5rem;
+  font-size: 1.125rem;
+}
+
+.section-hint {
+  margin-bottom: 1rem;
+}
+
+.buttons.comparison button[data-preset^="wavetable."] {
+  border-color: #0d9488;
+  background: #134e4a;
+}
+
+.buttons.comparison button[data-preset^="wavetable."]:hover {
+  background: #115e59;
+}
+
 button {
   padding: 0.75rem 1rem;
   border: 1px solid #334155;

@@ -54,6 +54,10 @@ describe("wasm toolchain", () => {
     expect(await WasmBridge.probeInvalidPackedLength()).toBe(true);
   });
 
+  test("legacy 20-float packed length still renders existing waveforms", async () => {
+    expect(await WasmBridge.probeLegacyPackedLength()).toBe(true);
+  });
+
   test("public exports do not expose Emscripten symbols", () => {
     for (const name of forbiddenPublicExports) {
       expect(name in publicApi).toBe(false);

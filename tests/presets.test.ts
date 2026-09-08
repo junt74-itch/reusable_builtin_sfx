@@ -8,7 +8,7 @@ import {
 } from "../src/presets.ts";
 
 describe("presets", () => {
-  test("builtin presets include 12 named entries", () => {
+  test("builtin presets include all named entries", () => {
     expect(BUILTIN_PRESET_NAMES.length).toBeGreaterThanOrEqual(12);
     const presets = builtinPresets();
     expect(Object.keys(presets).length).toBeGreaterThanOrEqual(12);

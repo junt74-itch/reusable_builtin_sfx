@@ -29,6 +29,16 @@ describe("authoring GitHub Pages", () => {
     expect(source.includes(".nojekyll")).toBe(true);
   });
 
+  test("authoring editor lists kamata wave-memory presets", async () => {
+    const source = await Bun.file(join(repoRoot, "examples/authoring/main.ts")).text();
+    expect(source.includes("KAMATA_WAVETABLE_NAMES")).toBe(true);
+    expect(source.includes("wavetable-picker")).toBe(true);
+    expect(source.includes("kamata00")).toBe(true);
+    expect(source.includes("kamata24")).toBe(true);
+    expect(source.includes("kamata-preset")).toBe(true);
+    expect(source.includes("patchWithSelectedKamata")).toBe(true);
+  });
+
   test("Pages workflow builds with Bun and Emscripten", async () => {
     const workflow = await Bun.file(join(repoRoot, ".github/workflows/pages.yml")).text();
     expect(workflow.includes("oven-sh/setup-bun@v2")).toBe(true);

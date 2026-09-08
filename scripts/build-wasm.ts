@@ -29,8 +29,8 @@ const args = [
   "-sSINGLE_FILE=1",
   "-sALLOW_MEMORY_GROWTH=1",
   "-sFILESYSTEM=0",
-  "-sEXPORTED_FUNCTIONS=_create_context,_destroy_context,_render_patch,_malloc,_free",
-  "-sEXPORTED_RUNTIME_METHODS=HEAPF32,HEAP32",
+  "-sEXPORTED_FUNCTIONS=_create_context,_destroy_context,_render_patch,_register_wavetable,_unregister_wavetable,_clear_wavetables,_malloc,_free",
+  "-sEXPORTED_RUNTIME_METHODS=HEAPF32,HEAP32,HEAPU8",
   "-o",
   outputJs,
 ];

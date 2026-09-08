@@ -6,6 +6,7 @@
 #include "sfx_frequency.hpp"
 #include "sfx_oscillators.hpp"
 #include "sfx_phaser.hpp"
+#include "sfx_wavetable.hpp"
 #include "sfx_repeat.hpp"
 #include "sfx_rng.hpp"
 
@@ -22,7 +23,11 @@ int sample_count_from_envelope(const SfxPatch& patch, int sampleRate) {
 
 }  // namespace
 
-std::vector<float> render(const SfxPatch& patch, int sampleRate, std::uint32_t seed) {
+std::vector<float> render(
+    const SfxPatch& patch,
+    int sampleRate,
+    std::uint32_t seed,
+    const WavetableBank* wavetables) {
   if (sampleRate <= 0) {
     return {};
   }
@@ -69,6 +74,13 @@ std::vector<float> render(const SfxPatch& patch, int sampleRate, std::uint32_t s
     float sample = 0.0f;
     if (patch.waveform == SfxWaveform::Noise) {
       sample = noise_value;
+    } else if (patch.waveform == SfxWaveform::Wavetable32) {
+      if (wavetables != nullptr) {
+        const Wavetable32* table = wavetables->get_wavetable(patch.wavetableId);
+        if (table != nullptr) {
+          sample = wavetable32_sample(*table, phase);
+        }
+      }
     } else {
       sample = oscillator_sample(patch.waveform, phase, duty, rng);
     }

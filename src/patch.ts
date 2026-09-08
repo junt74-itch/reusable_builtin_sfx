@@ -80,7 +80,24 @@ export function validatePatch(input: unknown): SfxPatchV1 {
   const phaserOffset = optionalFinite(input.phaserOffset, "phaserOffset") ?? 0;
   const phaserSweep = optionalFinite(input.phaserSweep, "phaserSweep") ?? 0;
 
-  return {
+  let wavetable: string | undefined;
+  if (input.wavetable !== undefined) {
+    if (typeof input.wavetable !== "string" || input.wavetable.length === 0) {
+      throw new Error("invalid patch: wavetable must be a non-empty string");
+    }
+    wavetable = input.wavetable;
+  }
+
+  let wavetableId: number | undefined;
+  if (input.wavetableId !== undefined) {
+    const id = requireFinite(input.wavetableId, "wavetableId");
+    if (!Number.isInteger(id) || id < 0) {
+      throw new Error("invalid patch: wavetableId must be an integer >= 0");
+    }
+    wavetableId = id;
+  }
+
+  const result: SfxPatchV1 = {
     version: 1,
     waveform,
     baseFrequency,
@@ -102,4 +119,14 @@ export function validatePatch(input: unknown): SfxPatchV1 {
     phaserSweep,
     masterVolume,
   };
+
+  if (wavetable !== undefined) {
+    result.wavetable = wavetable;
+  }
+
+  if (wavetableId !== undefined) {
+    result.wavetableId = wavetableId;
+  }
+
+  return result;
 }

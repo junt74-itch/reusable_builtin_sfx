@@ -8,6 +8,7 @@
 #include "sfx_oscillators.hpp"
 #include "sfx_rng.hpp"
 #include "sfx_synth.hpp"
+#include "sfx_wavetable.hpp"
 
 #include <cmath>
 #include <cstdint>
@@ -150,6 +151,38 @@ std::uint32_t fnv1a_pcm_hash(const std::vector<float>& pcm) {
   hash ^= static_cast<std::uint32_t>(pcm.size());
   hash *= 16777619u;
   return hash;
+}
+
+float pcm_peak_abs(const std::vector<float>& pcm) {
+  float peak = 0.0f;
+  for (float sample : pcm) {
+    peak = std::max(peak, std::abs(sample));
+  }
+  return peak;
+}
+
+SfxPatch make_wavetable_render_patch(int wavetableId) {
+  SfxPatch patch;
+  patch.waveform = SfxWaveform::Wavetable32;
+  patch.wavetableId = wavetableId;
+  patch.baseFrequency = 440.0f;
+  patch.attack = 0.0f;
+  patch.sustain = 0.1f;
+  patch.decay = 0.1f;
+  patch.frequencySlide = 0.0f;
+  patch.frequencyDeltaSlide = 0.0f;
+  patch.vibratoDepth = 0.0f;
+  patch.vibratoSpeed = 0.0f;
+  patch.dutySweep = 0.0f;
+  patch.repeatSpeed = 0.0f;
+  patch.lowPassCutoff = 1.0f;
+  patch.lowPassSweep = 0.0f;
+  patch.highPassCutoff = 0.0f;
+  patch.highPassSweep = 0.0f;
+  patch.phaserOffset = 0.0f;
+  patch.phaserSweep = 0.0f;
+  patch.masterVolume = 0.5f;
+  return patch;
 }
 
 SfxPatch make_golden_patch() {
@@ -521,6 +554,170 @@ int main() {
     const auto other_seed = render(patch, 48000, 54321);
     CHECK(!pcm_equal(first, other_seed));
     CHECK(fnv1a_pcm_hash(first) != fnv1a_pcm_hash(other_seed));
+  }
+
+  {
+    CHECK(sizeof(Wavetable32) == 32);
+    CHECK(SFX_WAVETABLE32_SIZE == 32);
+    CHECK(static_cast<int>(Wavetable32{}.size()) == 32);
+
+    CHECK(std::abs(wavetable32_decode(0) + 1.0f) < 1e-6f);
+    CHECK(std::abs(wavetable32_decode(128)) < 0.01f);
+    CHECK(std::abs(wavetable32_decode(255) - 1.0f) < 1e-6f);
+
+    CHECK(wavetable32_index(0.0f) == 0);
+    CHECK(wavetable32_index(0.999f) == 31);
+
+    CHECK(wavetable32_index(-0.1f) == wavetable32_index(0.9f));
+    CHECK(wavetable32_index(1.5f) == wavetable32_index(0.5f));
+    CHECK(wavetable32_index(2.0f) == wavetable32_index(0.0f));
+
+    Wavetable32 table{};
+    for (int i = 0; i < SFX_WAVETABLE32_SIZE; ++i) {
+      table[static_cast<std::size_t>(i)] = static_cast<std::uint8_t>(i * 8);
+    }
+
+    const float at_quarter = wavetable32_sample(table, 0.25f);
+    const float at_quarter_again = wavetable32_sample(table, 0.25f);
+    CHECK(at_quarter == at_quarter_again);
+    CHECK(at_quarter == wavetable32_decode(table[static_cast<std::size_t>(wavetable32_index(0.25f))]));
+  }
+
+  {
+    WavetableBank bank;
+    std::uint8_t samples[SFX_WAVETABLE32_SIZE];
+    for (int i = 0; i < SFX_WAVETABLE32_SIZE; ++i) {
+      samples[static_cast<std::size_t>(i)] = static_cast<std::uint8_t>(i + 1);
+    }
+
+    CHECK(bank.register_wavetable(7, samples, SFX_WAVETABLE32_SIZE));
+    CHECK(bank.has_wavetable(7));
+    CHECK(bank.size() == 1);
+
+    const Wavetable32* stored = bank.get_wavetable(7);
+    CHECK(stored != nullptr);
+    for (int i = 0; i < SFX_WAVETABLE32_SIZE; ++i) {
+      CHECK((*stored)[static_cast<std::size_t>(i)] == samples[static_cast<std::size_t>(i)]);
+    }
+
+    std::uint8_t short_buf[31] = {};
+    std::uint8_t long_buf[33] = {};
+    CHECK(!bank.register_wavetable(8, short_buf, 31));
+    CHECK(!bank.register_wavetable(8, long_buf, 33));
+    CHECK(!bank.register_wavetable(8, nullptr, SFX_WAVETABLE32_SIZE));
+    CHECK(!bank.has_wavetable(8));
+    CHECK(bank.size() == 1);
+
+    CHECK(!bank.register_wavetable(-1, samples, SFX_WAVETABLE32_SIZE));
+    CHECK(!bank.has_wavetable(-1));
+
+    for (int i = 0; i < SFX_WAVETABLE32_SIZE; ++i) {
+      samples[static_cast<std::size_t>(i)] = static_cast<std::uint8_t>(255 - i);
+    }
+    CHECK(bank.register_wavetable(7, samples, SFX_WAVETABLE32_SIZE));
+    stored = bank.get_wavetable(7);
+    CHECK(stored != nullptr);
+    for (int i = 0; i < SFX_WAVETABLE32_SIZE; ++i) {
+      CHECK((*stored)[static_cast<std::size_t>(i)] == samples[static_cast<std::size_t>(i)]);
+    }
+
+    CHECK(bank.unregister_wavetable(7));
+    CHECK(!bank.has_wavetable(7));
+    CHECK(bank.get_wavetable(7) == nullptr);
+    CHECK(!bank.unregister_wavetable(7));
+    CHECK(bank.size() == 0);
+
+    CHECK(bank.register_wavetable(3, samples, SFX_WAVETABLE32_SIZE));
+    CHECK(bank.has_wavetable(3));
+    bank.clear_wavetables();
+    CHECK(!bank.has_wavetable(3));
+    CHECK(bank.get_wavetable(3) == nullptr);
+    CHECK(bank.size() == 0);
+
+    for (int i = 0; i < SFX_WAVETABLE_BANK_MAX; ++i) {
+      for (int j = 0; j < SFX_WAVETABLE32_SIZE; ++j) {
+        samples[static_cast<std::size_t>(j)] = static_cast<std::uint8_t>(i + j);
+      }
+      CHECK(bank.register_wavetable(i, samples, SFX_WAVETABLE32_SIZE));
+    }
+    CHECK(bank.size() == SFX_WAVETABLE_BANK_MAX);
+    for (int j = 0; j < SFX_WAVETABLE32_SIZE; ++j) {
+      samples[static_cast<std::size_t>(j)] = static_cast<std::uint8_t>(j);
+    }
+    CHECK(!bank.register_wavetable(SFX_WAVETABLE_BANK_MAX, samples, SFX_WAVETABLE32_SIZE));
+    CHECK(!bank.has_wavetable(SFX_WAVETABLE_BANK_MAX));
+
+    CHECK(bank.register_wavetable(0, samples, SFX_WAVETABLE32_SIZE));
+    stored = bank.get_wavetable(0);
+    CHECK(stored != nullptr);
+    CHECK((*stored)[0] == samples[0]);
+
+    bank.clear_wavetables();
+    for (int j = 0; j < SFX_WAVETABLE32_SIZE; ++j) {
+      samples[static_cast<std::size_t>(j)] = static_cast<std::uint8_t>(100 + j);
+    }
+    CHECK(bank.register_wavetable(42, samples, SFX_WAVETABLE32_SIZE));
+    samples[0] = 0;
+    samples[31] = 255;
+    stored = bank.get_wavetable(42);
+    CHECK(stored != nullptr);
+    CHECK((*stored)[0] == 100);
+    CHECK((*stored)[31] == static_cast<std::uint8_t>(100 + 31));
+  }
+
+  {
+    CHECK(static_cast<int>(SfxWaveform::Wavetable32) == 5);
+    CHECK(SFX_PACKED_FLOAT_COUNT == 21);
+
+    SfxPatch with_id;
+    with_id.wavetableId = 42;
+    with_id.waveform = SfxWaveform::Wavetable32;
+    float packed[SFX_PACKED_FLOAT_COUNT];
+    pack_patch(with_id, packed);
+    const SfxPatch unpacked = unpack_patch(packed);
+    CHECK(unpacked.wavetableId == 42);
+    CHECK(unpacked.waveform == SfxWaveform::Wavetable32);
+
+    const SfxPatch from_legacy = unpack_patch(packed, 20);
+    CHECK(from_legacy.wavetableId == 0);
+
+    packed[20] = -5.0f;
+    const SfxPatch negative_id = unpack_patch(packed, 21);
+    CHECK(negative_id.wavetableId == 0);
+
+    packed[1] = 99.0f;
+    const SfxPatch invalid_waveform = unpack_patch(packed);
+    CHECK(invalid_waveform.waveform == SfxWaveform::Square);
+  }
+
+  {
+    WavetableBank bank;
+    std::uint8_t samples[SFX_WAVETABLE32_SIZE];
+    for (int i = 0; i < SFX_WAVETABLE32_SIZE; ++i) {
+      samples[static_cast<std::size_t>(i)] = 255;
+    }
+    CHECK(bank.register_wavetable(1, samples, SFX_WAVETABLE32_SIZE));
+
+    const SfxPatch patch = make_wavetable_render_patch(1);
+    const auto pcm = render(patch, 48000, 12345, &bank);
+    CHECK(!pcm.empty());
+    CHECK(pcm_peak_abs(pcm) > 0.1f);
+
+    const auto first = render(patch, 48000, 12345, &bank);
+    const auto second = render(patch, 48000, 12345, &bank);
+    CHECK(pcm_equal(first, second));
+  }
+
+  {
+    const SfxPatch patch = make_wavetable_render_patch(99);
+    const auto null_bank = render(patch, 48000, 12345, nullptr);
+    CHECK(!null_bank.empty());
+    CHECK(pcm_peak_abs(null_bank) < 1e-5f);
+
+    WavetableBank bank;
+    const auto missing_id = render(patch, 48000, 12345, &bank);
+    CHECK(!missing_id.empty());
+    CHECK(pcm_peak_abs(missing_id) < 1e-5f);
   }
 
   if (failures != 0) {

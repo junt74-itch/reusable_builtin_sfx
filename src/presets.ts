@@ -13,6 +13,9 @@ import weaponShot from "../presets/weapon.shot.json";
 import explosionBasic from "../presets/explosion.basic.json";
 import powerup from "../presets/powerup.json";
 import warning from "../presets/warning.json";
+import wavetableSineish from "../presets/wavetable.sineish.json";
+import wavetableMetallic from "../presets/wavetable.metallic.json";
+import wavetableHollow from "../presets/wavetable.hollow.json";
 
 export const BUILTIN_PRESET_NAMES = [
   "ui.select",
@@ -27,6 +30,9 @@ export const BUILTIN_PRESET_NAMES = [
   "explosion.basic",
   "powerup",
   "warning",
+  "wavetable.sineish",
+  "wavetable.metallic",
+  "wavetable.hollow",
 ] as const;
 
 export type BuiltinPresetName = (typeof BUILTIN_PRESET_NAMES)[number];
@@ -44,6 +50,9 @@ const RAW_BUILTIN_PRESETS: Record<string, unknown> = {
   "explosion.basic": explosionBasic,
   powerup,
   warning,
+  "wavetable.sineish": wavetableSineish,
+  "wavetable.metallic": wavetableMetallic,
+  "wavetable.hollow": wavetableHollow,
 };
 
 function isRecord(value: unknown): value is Record<string, unknown> {

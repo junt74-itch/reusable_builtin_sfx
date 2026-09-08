@@ -228,6 +228,12 @@ describe("§21 acceptance criteria", () => {
     expect(source.includes("player.jump")).toBe(true);
     expect(source.includes("enemy.hit")).toBe(true);
     expect(source.includes("explosion.basic")).toBe(true);
+    expect(source.includes("Random variant")).toBe(true);
+    expect(source.includes("compare-sine")).toBe(true);
+    expect(source.includes("compare-triangle")).toBe(true);
+    expect(source.includes("wavetable.sineish")).toBe(true);
+    expect(source.includes("wavetable.metallic")).toBe(true);
+    expect(source.includes("wavetable.hollow")).toBe(true);
     expect(source.toLowerCase().includes("phaser")).toBe(false);
   });
 

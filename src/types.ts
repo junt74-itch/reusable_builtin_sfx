@@ -1,12 +1,15 @@
-export const SFX_PACKED_FLOAT_COUNT = 20;
+export const SFX_PACKED_FLOAT_COUNT = 21;
 
-export const SFX_WAVEFORMS = ["square", "saw", "sine", "triangle", "noise"] as const;
+export const SFX_WAVEFORMS = ["square", "saw", "sine", "triangle", "noise", "wavetable32"] as const;
 
 export type SfxWaveform = (typeof SFX_WAVEFORMS)[number];
 
 export interface SfxPatchV1 {
   version: 1;
   waveform: SfxWaveform;
+  /** Named wavetable reference; resolved to wavetableId before render. */
+  wavetable?: string;
+  wavetableId?: number;
   baseFrequency: number;
   frequencySlide: number;
   frequencyDeltaSlide: number;
@@ -49,6 +52,9 @@ export interface SfxEngine {
   render(nameOrPatch: string | SfxPatchV1, options?: RenderOptions): Promise<Float32Array>;
   preload(names: string[]): Promise<void>;
   clearCache(): void;
+  registerWavetable(nameOrId: string | number, data: Uint8Array): void;
+  unregisterWavetable(nameOrId: string | number): void;
+  clearWavetables(): void;
   setMasterVolume(volume: number): void;
   dispose(): void;
 }
@@ -59,9 +65,10 @@ export const WAVEFORM_TO_INDEX: Record<SfxWaveform, number> = {
   sine: 2,
   triangle: 3,
   noise: 4,
+  wavetable32: 5,
 };
 
-/** Mirrors `pack_patch` indices in `core/include/sfx_patch.hpp` (0..19). */
+/** Mirrors `pack_patch` indices in `core/include/sfx_patch.hpp` (0..20). */
 export const PACKED_PATCH_FIELD_ORDER = [
   "version",
   "waveform",
@@ -83,6 +90,7 @@ export const PACKED_PATCH_FIELD_ORDER = [
   "phaserOffset",
   "phaserSweep",
   "masterVolume",
+  "wavetableId",
 ] as const;
 
 export function packPatch(patch: SfxPatchV1): Float32Array {
@@ -107,6 +115,7 @@ export function packPatch(patch: SfxPatchV1): Float32Array {
   packed[17] = patch.phaserOffset ?? 0;
   packed[18] = patch.phaserSweep ?? 0;
   packed[19] = patch.masterVolume ?? 0.5;
+  packed[20] = patch.wavetableId ?? 0;
   return packed;
 }
 

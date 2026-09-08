@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "waveform": "wavetable32",
+  "wavetable": "hollow",
+  "baseFrequency": 440,
+  "frequencySlide": 0,
+  "frequencyDeltaSlide": 0,
+  "attack": 0,
+  "sustain": 0.08,
+  "decay": 0.15,
+  "vibratoDepth": 0,
+  "vibratoSpeed": 0,
+  "masterVolume": 0.5
+}

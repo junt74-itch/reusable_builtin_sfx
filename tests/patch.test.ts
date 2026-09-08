@@ -1,5 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { validatePatch } from "../src/patch.ts";
+import { BUILTIN_PRESET_NAMES, builtinPresets } from "../src/presets.ts";
 import {
   defaultPatch,
   packPatch,
@@ -41,12 +42,59 @@ describe("validatePatch", () => {
   test("throws on negative attack", () => {
     expect(() => validatePatch({ ...defaultPatch(), attack: -0.01 })).toThrow(/attack/);
   });
+
+  test("accepts wavetable32 without wavetableId", () => {
+    const patch = validatePatch(defaultPatch({ waveform: "wavetable32" }));
+    expect(patch.waveform).toBe("wavetable32");
+    expect(patch.wavetableId).toBeUndefined();
+  });
+
+  test("accepts wavetable32 with wavetableId", () => {
+    const patch = validatePatch(defaultPatch({ waveform: "wavetable32", wavetableId: 7 }));
+    expect(patch.waveform).toBe("wavetable32");
+    expect(patch.wavetableId).toBe(7);
+  });
+
+  test("accepts wavetable32 with wavetable name", () => {
+    const patch = validatePatch(defaultPatch({ waveform: "wavetable32", wavetable: "bell" }));
+    expect(patch.waveform).toBe("wavetable32");
+    expect(patch.wavetable).toBe("bell");
+  });
+
+  test("rejects empty wavetable name", () => {
+    expect(() => validatePatch({ ...defaultPatch({ waveform: "wavetable32" }), wavetable: "" })).toThrow(
+      /wavetable must be a non-empty string/,
+    );
+  });
+
+  test("does not require wavetable on classic waveforms", () => {
+    for (const waveform of ["square", "saw", "sine", "triangle", "noise"] as const) {
+      const patch = validatePatch(defaultPatch({ waveform }));
+      expect(patch.waveform).toBe(waveform);
+      expect(patch.wavetable).toBeUndefined();
+    }
+  });
+
+  test("rejects invalid wavetableId", () => {
+    expect(() => validatePatch({ ...defaultPatch(), wavetableId: -1 })).toThrow(/wavetableId/);
+    expect(() => validatePatch({ ...defaultPatch(), wavetableId: 1.5 })).toThrow(/wavetableId/);
+  });
+
+  test("validates all builtin presets", () => {
+    const presets = builtinPresets();
+    for (const name of BUILTIN_PRESET_NAMES) {
+      const preset = presets[name];
+      expect(preset).toBeDefined();
+      const validated = validatePatch(preset);
+      expect(validated.version).toBe(1);
+    }
+  });
 });
 
 describe("packPatch ABI", () => {
-  test("SFX_PACKED_FLOAT_COUNT is 20", () => {
-    expect(SFX_PACKED_FLOAT_COUNT).toBe(20);
-    expect(PACKED_PATCH_FIELD_ORDER.length).toBe(20);
+  test("SFX_PACKED_FLOAT_COUNT is 21", () => {
+    expect(SFX_PACKED_FLOAT_COUNT).toBe(21);
+    expect(PACKED_PATCH_FIELD_ORDER.length).toBe(21);
   });
 
   test("packed layout matches core/include/sfx_patch.hpp order", () => {
@@ -79,6 +127,7 @@ describe("packPatch ABI", () => {
     expect(PACKED_PATCH_FIELD_ORDER[0]).toBe("version");
     expect(PACKED_PATCH_FIELD_ORDER[1]).toBe("waveform");
     expect(PACKED_PATCH_FIELD_ORDER[19]).toBe("masterVolume");
+    expect(PACKED_PATCH_FIELD_ORDER[20]).toBe("wavetableId");
 
     expect(packed[0]).toBe(1);
     expect(packed[1]).toBe(WAVEFORM_TO_INDEX.triangle);
@@ -100,5 +149,23 @@ describe("packPatch ABI", () => {
     expect(packed[17]).toBeCloseTo(0.4);
     expect(packed[18]).toBeCloseTo(0.5);
     expect(packed[19]).toBeCloseTo(0.9);
+    expect(packed[20]).toBe(0);
+  });
+
+  test("packs wavetableId at index 20", () => {
+    const patch = validatePatch(
+      defaultPatch({
+        waveform: "wavetable32",
+        wavetableId: 42,
+      }),
+    );
+    const packed = packPatch(patch);
+    expect(packed[1]).toBe(WAVEFORM_TO_INDEX.wavetable32);
+    expect(packed[20]).toBe(42);
+  });
+
+  test("defaults omitted wavetableId to 0", () => {
+    const packed = packPatch(validatePatch(defaultPatch({ waveform: "sine" })));
+    expect(packed[20]).toBe(0);
   });
 });

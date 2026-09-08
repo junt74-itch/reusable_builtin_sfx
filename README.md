@@ -19,6 +19,27 @@ await sfx.play("enemy.hit", { seed: enemyId, volume: 0.8, pan: -0.2 });
 sfx.dispose();
 ```
 
+### wavetable32（32 サンプル波形）
+
+波形データは **Patch とは別メモリ** に登録します。1 周期 32 サンプル、`Uint8Array` で各値 0..255、nearest-neighbor で読み出します。
+
+```ts
+const wave = new Uint8Array(32); // 例: 自作波形
+// wave[i] = ... (0..255)
+
+sfx.registerWavetable("bell", wave); // Uint8Array 32, 値 0..255
+await sfx.play({
+  waveform: "wavetable32",
+  wavetable: "bell",
+  baseFrequency: 440,
+  attack: 0,
+  sustain: 0.08,
+  decay: 0.15,
+});
+```
+
+`createSfxEngine` は builtin 波形 `sineish` / `metallic` / `hollow` を自動登録し、対応 preset `wavetable.sineish` 等（計 3 種）も含めます。Patch 側は `wavetable: "sineish"` のように名前参照するか、数値 `wavetableId` を指定します。
+
 Phaser 4 など既存の `AudioContext` を共有する場合:
 
 ```ts
@@ -26,7 +47,7 @@ const sfx = await createSfxEngine({ audioContext: game.sound.context });
 await sfx.play("explosion.basic");
 ```
 
-主な API: `createSfxEngine`, `play`, `render`, `preload`, `clearCache`, `setMasterVolume`, `dispose`, `mutatePatch`。builtin preset 名は `ui.select`, `player.jump`, `enemy.hit`, `explosion.basic` など 12 種（`BUILTIN_PRESET_NAMES`）。
+主な API: `createSfxEngine`, `play`, `render`, `preload`, `clearCache`, `registerWavetable`, `unregisterWavetable`, `clearWavetables`, `setMasterVolume`, `dispose`, `mutatePatch`。builtin preset はゲーム向け 12 種（`ui.select`, `player.jump`, `enemy.hit`, `explosion.basic` など）に加え、wavetable 試聴用 demo preset 3 種（`wavetable.sineish` 等、`BUILTIN_PRESET_NAMES` 参照）。
 
 ## 必要環境
 
@@ -56,7 +77,7 @@ Emscripten は `EMSDK` 環境変数を設定するか、`bun run setup:emsdk` �
 bun run dev
 ```
 
-`http://localhost:5173/` で 5 ボタン（ui.select / player.jump / enemy.hit / explosion.basic / Random variant）から SE を試せます。
+`http://localhost:5173/` で 5 ボタン（ui.select / player.jump / enemy.hit / explosion.basic / Random variant）から SE を試せます。下段の **440 Hz comparison** では Sine / Triangle と wavetable32 3 種（Sine-ish / Metallic / Hollow）を同一ピッチで比較できます。
 
 ### Phaser 4
 
@@ -72,7 +93,7 @@ bun run dev:phaser
 bun run dev:authoring
 ```
 
-`http://localhost:5175/` で 12 builtin preset をカテゴリに選び、Space または「引く」でガチャ再生します。続けてスライダーで Hz / 秒のまま調整し、画面上の `await sfx.play({ ... })` をコピーしてゲームに貼れます。
+`http://localhost:5175/` で builtin preset（ゲーム向け 12 種 + wavetable demo 3 種）をカテゴリに選び、Space または「引く」でガチャ再生します。`KAMATA wave32` から 25 種の波形メモリを選ぶと、カテゴリを問わずその 32 サンプル波形で試せます。続けてスライダーで Hz / 秒のまま調整し、画面上の `await sfx.play({ ... })` をコピーしてゲームに貼れます。
 
 公開版は GitHub Pages です。
 
@@ -114,6 +135,7 @@ bun run sfx mutate presets/ui.select.json --count 3 --out tmp/ui-select
 - AudioWorklet による低遅延再生
 - `bun run sfx random`（全ランダム生成 CLI）
 - `bun run sfx render`（WAV 書き出し CLI）
+- 任意長 wavetable、16-bit サンプル、波形エディタ、補間（linear 等）、morphing
 
 ## ライセンス
 

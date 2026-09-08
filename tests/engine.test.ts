@@ -16,8 +16,14 @@ const allowedValueExports = [
   "validatePatch",
   "defaultPatch",
   "BUILTIN_PRESET_NAMES",
+  "BUILTIN_WAVETABLE_NAMES",
+  "KAMATA_WAVETABLE_NAMES",
   "builtinPresets",
+  "builtinWavetables",
+  "kamataWavetables",
   "loadPresets",
+  "loadWavetable",
+  "registeredWavetables",
   "mergePresets",
   "encodeWavPcm16",
   "SFX_WAVEFORMS",
@@ -149,6 +155,9 @@ describe("SfxEngine public API", () => {
     expect(typeof engine.render).toBe("function");
     expect(typeof engine.preload).toBe("function");
     expect(typeof engine.clearCache).toBe("function");
+    expect(typeof engine.registerWavetable).toBe("function");
+    expect(typeof engine.unregisterWavetable).toBe("function");
+    expect(typeof engine.clearWavetables).toBe("function");
     expect(typeof engine.setMasterVolume).toBe("function");
     expect(typeof engine.dispose).toBe("function");
 

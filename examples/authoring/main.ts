@@ -1,12 +1,17 @@
 import {
   BUILTIN_PRESET_NAMES,
+  BUILTIN_WAVETABLE_NAMES,
+  KAMATA_WAVETABLE_NAMES,
   SFX_WAVEFORMS,
   builtinPresets,
+  builtinWavetables,
   createSfxEngine,
   encodeWavPcm16,
+  kamataWavetables,
   mutatePatch,
   validatePatch,
   type BuiltinPresetName,
+  type RegisteredWavetableName,
   type SfxPatchV1,
   type SfxWaveform,
 } from "../../src/index.ts";
@@ -26,7 +31,7 @@ type HistoryEntry = {
   patch: SfxPatchV1;
 };
 
-type NumericFieldKey = Exclude<keyof SfxPatchV1, "version" | "waveform">;
+type NumericFieldKey = Exclude<keyof SfxPatchV1, "version" | "waveform" | "wavetable" | "wavetableId">;
 
 type NumericFieldDef = {
   key: NumericFieldKey;
@@ -56,6 +61,45 @@ const CATEGORY_LABELS: Record<BuiltinPresetName, string> = {
   "explosion.basic": "爆発",
   powerup: "パワーアップ",
   warning: "警告",
+  "wavetable.sineish": "Wavetable Sine-ish",
+  "wavetable.metallic": "Wavetable Metallic",
+  "wavetable.hollow": "Wavetable Hollow",
+};
+
+const WAVETABLE_LABELS: Record<RegisteredWavetableName, string> = {
+  sineish: "Sine-ish",
+  metallic: "Metallic",
+  hollow: "Hollow",
+  kamata00: "Kamata 00",
+  kamata01: "Kamata 01",
+  kamata02: "Kamata 02",
+  kamata03: "Kamata 03",
+  kamata04: "Kamata 04",
+  kamata05: "Kamata 05",
+  kamata06: "Kamata 06",
+  kamata07: "Kamata 07",
+  kamata08: "Kamata 08",
+  kamata09: "Kamata 09",
+  kamata10: "Kamata 10",
+  kamata11: "Kamata 11",
+  kamata12: "Kamata 12",
+  kamata13: "Kamata 13",
+  kamata14: "Kamata 14",
+  kamata15: "Kamata 15",
+  kamata16: "Kamata 16",
+  kamata17: "Kamata 17",
+  kamata18: "Kamata 18",
+  kamata19: "Kamata 19",
+  kamata20: "Kamata 20",
+  kamata21: "Kamata 21",
+  kamata22: "Kamata 22",
+  kamata23: "Kamata 23",
+  kamata24: "Kamata 24",
+};
+
+const registeredTables = {
+  ...builtinWavetables(),
+  ...kamataWavetables(),
 };
 
 const amountLabels: Record<string, string> = {
@@ -111,6 +155,7 @@ const FIELD_GROUPS: FieldGroup[] = [
 const NUMERIC_FIELDS = FIELD_GROUPS.flatMap((group) => group.fields);
 
 const categoryEl = document.querySelector("#category");
+const kamataPresetEl = document.querySelector("#kamata-preset");
 const categoryHintEl = document.querySelector("#category-hint");
 const sampleRateEl = document.querySelector("#sample-rate");
 const statusEl = document.querySelector("#status");
@@ -130,6 +175,7 @@ const copyMetaEl = document.querySelector("#copy-meta");
 
 if (
   !(categoryEl instanceof HTMLSelectElement) ||
+  !(kamataPresetEl instanceof HTMLSelectElement) ||
   !(categoryHintEl instanceof HTMLElement) ||
   !(sampleRateEl instanceof HTMLElement) ||
   !(statusEl instanceof HTMLElement) ||
@@ -151,6 +197,7 @@ if (
 }
 
 const categorySelect = categoryEl;
+const kamataPresetSelect = kamataPresetEl;
 const categoryHint = categoryHintEl;
 const sampleRateLabel = sampleRateEl;
 const statusLabel = statusEl;
@@ -169,6 +216,7 @@ const copyPreview = copyPreviewEl;
 const copyMeta = copyMetaEl;
 
 const waveformSelect = document.createElement("select");
+const wavetablePicker = document.createElement("div");
 const sliderInputs = new Map<NumericFieldKey, HTMLInputElement>();
 const numericInputs = new Map<NumericFieldKey, HTMLInputElement>();
 
@@ -306,6 +354,18 @@ function selectedCategory(): BuiltinPresetName {
     throw new Error(`unknown category: ${value}`);
   }
   return value;
+}
+
+function selectedKamataWavetable(): RegisteredWavetableName | undefined {
+  const value = kamataPresetSelect.value;
+  return value === "" ? undefined : isRegisteredWavetableName(value) ? value : undefined;
+}
+
+function patchWithSelectedKamata(patch: SfxPatchV1): SfxPatchV1 {
+  const wavetable = selectedKamataWavetable();
+  return wavetable
+    ? validatePatch({ ...patch, waveform: "wavetable32", wavetable })
+    : patch;
 }
 
 function selectedAmount(): number {
@@ -485,6 +545,71 @@ function writeFieldControls(field: NumericFieldDef, value: number): void {
   }
 }
 
+function isRegisteredWavetableName(value: string): value is RegisteredWavetableName {
+  return value in registeredTables;
+}
+
+function drawWavetableThumb(canvas: HTMLCanvasElement, data: Uint8Array): void {
+  const ctx = canvas.getContext("2d");
+  if (!ctx) {
+    return;
+  }
+  const cell = 4;
+  canvas.width = 32 * cell;
+  canvas.height = 16 * cell;
+  ctx.fillStyle = "#020617";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.fillStyle = "#e2e8f0";
+  for (let x = 0; x < 32; x++) {
+    const sample = data[x] ?? 0;
+    const nibble = Math.max(0, Math.min(15, Math.round(sample / 17)));
+    const y = 15 - nibble;
+    ctx.fillRect(x * cell, y * cell, cell, cell);
+  }
+}
+
+function applyWavetableChoice(name: RegisteredWavetableName): void {
+  if (suppressEditorEvents || !workingPatch) {
+    return;
+  }
+  workingPatch = validatePatch({
+    ...workingPatch,
+    waveform: "wavetable32",
+    wavetable: name,
+  });
+  waveformSelect.value = "wavetable32";
+  syncWavetablePicker();
+  syncCopyPreview();
+  renderHistory(history);
+  schedulePlayWorkingPatch(WAVETABLE_LABELS[name]);
+}
+
+function syncWavetablePicker(): void {
+  const selected =
+    workingPatch?.waveform === "wavetable32" && workingPatch.wavetable ? workingPatch.wavetable : "";
+  for (const button of wavetablePicker.querySelectorAll<HTMLButtonElement>("[data-wavetable]")) {
+    button.classList.toggle("selected", button.dataset.wavetable === selected);
+  }
+}
+
+function createWavetableButton(name: RegisteredWavetableName): HTMLButtonElement {
+  const button = document.createElement("button");
+  button.type = "button";
+  button.className = "wavetable-choice";
+  button.dataset.wavetable = name;
+  const data = registeredTables[name];
+  const canvas = document.createElement("canvas");
+  canvas.setAttribute("aria-hidden", "true");
+  drawWavetableThumb(canvas, data);
+  const label = document.createElement("span");
+  label.textContent = WAVETABLE_LABELS[name];
+  button.append(canvas, label);
+  button.addEventListener("click", () => {
+    applyWavetableChoice(name);
+  });
+  return button;
+}
+
 function applyNumericField(field: NumericFieldDef, rawValue: number): void {
   if (suppressEditorEvents || !workingPatch || !Number.isFinite(rawValue)) {
     return;
@@ -518,16 +643,52 @@ function buildEditorControls(): void {
   }
   waveformField.append(waveformSelect);
   pitchGroup.append(waveformField);
+
+  const wavetableField = document.createElement("div");
+  wavetableField.className = "editor-field wavetable-field";
+  wavetableField.innerHTML = `<span>波形メモリ <em>(32 sample / 4bit)</em></span>`;
+  wavetablePicker.className = "wavetable-picker";
+  wavetablePicker.setAttribute("role", "listbox");
+  wavetablePicker.setAttribute("aria-label", "波形メモリ");
+
+  const builtinRow = document.createElement("div");
+  builtinRow.className = "wavetable-picker-row";
+  for (const name of BUILTIN_WAVETABLE_NAMES) {
+    builtinRow.append(createWavetableButton(name));
+  }
+
+  const kamataGrid = document.createElement("div");
+  kamataGrid.className = "wavetable-picker-grid";
+  for (const name of KAMATA_WAVETABLE_NAMES) {
+    kamataGrid.append(createWavetableButton(name));
+  }
+
+  wavetablePicker.append(builtinRow, kamataGrid);
+  wavetableField.append(wavetablePicker);
+  pitchGroup.append(wavetableField);
   editorFields.append(pitchGroup);
 
   waveformSelect.addEventListener("change", () => {
     if (suppressEditorEvents || !workingPatch) {
       return;
     }
-    workingPatch = validatePatch({
-      ...workingPatch,
-      waveform: waveformSelect.value as SfxWaveform,
-    });
+    const waveform = waveformSelect.value as SfxWaveform;
+    if (waveform === "wavetable32") {
+      const current = workingPatch.wavetable;
+      const wavetable = current && isRegisteredWavetableName(current) ? current : "kamata00";
+      workingPatch = validatePatch({
+        ...workingPatch,
+        waveform,
+        wavetable,
+      });
+    } else {
+      const { wavetable: _wavetable, wavetableId: _wavetableId, ...rest } = workingPatch;
+      workingPatch = validatePatch({
+        ...rest,
+        waveform,
+      });
+    }
+    syncWavetablePicker();
     syncCopyPreview();
     renderHistory(history);
     schedulePlayWorkingPatch("波形");
@@ -592,6 +753,7 @@ function syncEditorControls(): void {
   editorFields.classList.remove("hidden");
   editorActions.classList.remove("hidden");
   waveformSelect.value = workingPatch.waveform;
+  syncWavetablePicker();
   for (const field of NUMERIC_FIELDS) {
     writeFieldControls(field, readNumericValue(workingPatch, field.key));
   }
@@ -691,6 +853,16 @@ for (const name of BUILTIN_PRESET_NAMES) {
   option.textContent = categoryOptionLabel(name);
   categorySelect.append(option);
 }
+const noKamataOption = document.createElement("option");
+noKamataOption.value = "";
+noKamataOption.textContent = "使わない（カテゴリの元の波形）";
+kamataPresetSelect.append(noKamataOption);
+for (const name of KAMATA_WAVETABLE_NAMES) {
+  const option = document.createElement("option");
+  option.value = name;
+  option.textContent = WAVETABLE_LABELS[name];
+  kamataPresetSelect.append(option);
+}
 categorySelect.value = "ui.select";
 sampleRateLabel.textContent = String(audioContext.sampleRate);
 updateCategoryHint();
@@ -714,7 +886,7 @@ function drawVariant(): void {
   if (!base) {
     throw new Error(`missing preset: ${category}`);
   }
-  const patch = mutatePatch(base, { amount, seed });
+  const patch = patchWithSelectedKamata(mutatePatch(base, { amount, seed }));
   const entry: HistoryEntry = {
     id: `${Date.now().toString(36)}-${seed.toString(16)}`,
     category,
@@ -759,7 +931,7 @@ drawControl.addEventListener("click", () => {
 playBaseControl.addEventListener("click", () => {
   const category = selectedCategory();
   setStatus(`${categoryLabel(category)} のベースを再生`);
-  void sfx.play(category);
+  void playPatch(patchWithSelectedKamata(presets[category]!));
 });
 
 clearHistoryControl.addEventListener("click", () => {

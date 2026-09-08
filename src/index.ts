@@ -7,6 +7,14 @@ export {
   loadPresets,
   mergePresets,
 } from "./presets.ts";
+export {
+  BUILTIN_WAVETABLE_NAMES,
+  KAMATA_WAVETABLE_NAMES,
+  builtinWavetables,
+  kamataWavetables,
+  loadWavetable,
+  registeredWavetables,
+} from "./wavetables.ts";
 export { encodeWavPcm16 } from "./wav.ts";
 export { defaultPatch, SFX_WAVEFORMS } from "./types.ts";
 export type { MutatePatchOptions } from "./mutate.ts";
@@ -19,3 +27,4 @@ export type {
   SfxWaveform,
 } from "./types.ts";
 export type { BuiltinPresetName } from "./presets.ts";
+export type { BuiltinWavetableName, KamataWavetableName, RegisteredWavetableName } from "./wavetables.ts";

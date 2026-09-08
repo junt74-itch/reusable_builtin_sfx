@@ -3,7 +3,7 @@
 #include <cstdint>
 
 // Packed WASM/C++ ABI. Do not reorder fields; TypeScript mirrors this layout.
-inline constexpr int SFX_PACKED_FLOAT_COUNT = 20;
+inline constexpr int SFX_PACKED_FLOAT_COUNT = 21;
 
 enum class SfxWaveform : std::uint8_t {
   Square = 0,
@@ -11,6 +11,7 @@ enum class SfxWaveform : std::uint8_t {
   Sine = 2,
   Triangle = 3,
   Noise = 4,
+  Wavetable32 = 5,
 };
 
 // Independent patch format (not Bfxr slider space).
@@ -18,6 +19,7 @@ enum class SfxWaveform : std::uint8_t {
 struct SfxPatch {
   int version = 1;
   SfxWaveform waveform = SfxWaveform::Square;
+  int wavetableId = 0;
   float baseFrequency = 440.0f;       // Hz
   float frequencySlide = 0.0f;        // octaves / second
   float frequencyDeltaSlide = 0.0f;   // octaves / second^2
@@ -59,13 +61,14 @@ inline void pack_patch(const SfxPatch& patch, float* out) {
   out[17] = patch.phaserOffset;
   out[18] = patch.phaserSweep;
   out[19] = patch.masterVolume;
+  out[20] = static_cast<float>(patch.wavetableId);
 }
 
-inline SfxPatch unpack_patch(const float* in) {
+inline SfxPatch unpack_patch(const float* in, int count = SFX_PACKED_FLOAT_COUNT) {
   SfxPatch patch;
   patch.version = static_cast<int>(in[0]);
   const int waveform = static_cast<int>(in[1]);
-  if (waveform >= 0 && waveform <= 4) {
+  if (waveform >= 0 && waveform <= 5) {
     patch.waveform = static_cast<SfxWaveform>(waveform);
   }
   patch.baseFrequency = in[2];
@@ -86,5 +89,9 @@ inline SfxPatch unpack_patch(const float* in) {
   patch.phaserOffset = in[17];
   patch.phaserSweep = in[18];
   patch.masterVolume = in[19];
+  if (count >= 21) {
+    const int wavetable_id = static_cast<int>(in[20]);
+    patch.wavetableId = wavetable_id >= 0 ? wavetable_id : 0;
+  }
   return patch;
 }

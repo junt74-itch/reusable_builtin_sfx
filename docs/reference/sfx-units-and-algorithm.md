@@ -16,7 +16,9 @@ Composer 2.5 は本ファイルを DSP タスクの正とする。Bfxr 完全互
 
 | フィールド | 単位 | 意味 |
 | --- | --- | --- |
-| `waveform` | enum | square / saw / sine / triangle / noise |
+| `waveform` | enum | square / saw / sine / triangle / noise / wavetable32 |
+| `wavetable` | 名前参照 | `waveform: "wavetable32"` 時に使用。省略可。指定時は名前解決が `wavetableId` より優先 |
+| `wavetableId` | 整数 | WASM 側 wavetable bank の ID。省略時 0 |
 | `baseFrequency` | Hz | 開始周波数 |
 | `frequencySlide` | octave / s | 指数スライド。`f(t) = f0 * 2^(slide * t)` |
 | `frequencyDeltaSlide` | octave / s² | スライドの変化。`slide(t) = slide0 + delta * t` |
@@ -53,18 +55,24 @@ ADSR の R は持たない。A-S-D のみ。
 - sine: `sin(2π * phase)`
 - triangle: 位相から三角波
 - noise: seed 付き PRNG。周波数で更新周期を変える
+- wavetable32: 1 周期 32 サンプル `uint8`（0..255）。`sample/127.5-1` で -1..+1 にデコード。nearest-neighbor。`index = int(wrap_phase(phase) * 32) & 31`。波形データは Patch とは別の bank に登録し、`wavetableId` で参照する
 
 8x oversampling は必須ではない。入れるなら output sampleRate に対する倍率とし、44100 固定にしない。
 
 ## WASM ABI
 
-`SFX_PACKED_FLOAT_COUNT = 20`。並びは `core/include/sfx_patch.hpp` と `src/types.ts` の `packPatch` が正。順序を変えるときは両側とテストを同時に更新する。
+`SFX_PACKED_FLOAT_COUNT = 21`。`packed[20]` は `wavetableId`（整数を float として格納、省略時 0）。並びは `core/include/sfx_patch.hpp` と `src/types.ts` の `packPatch` が正。順序を変えるときは両側とテストを同時に更新する。WASM `render_patch` は `packed_len == 20`（旧、`wavetableId = 0`）または `21` を受理する。
 
 ```
 create_context()
 destroy_context()
 render_patch(packed, sample_rate, seed) -> Float32 PCM
+register_wavetable(ctx, id, data, length) -> int   // length == 32, 成功 1
+unregister_wavetable(ctx, id) -> int                 // 成功 1
+clear_wavetables(ctx)
 ```
+
+`render_patch` の `packed` は 20 要素（旧 ABI、`wavetableId = 0`）または 21 要素（`packed[20]` = `wavetableId`）を受理する。TypeScript 側は `wavetable` 名前を解決してから pack する。
 
 PCM ポインタは次の render または destroy まで有効。JS は直ちに copy する。
 

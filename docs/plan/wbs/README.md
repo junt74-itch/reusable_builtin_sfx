@@ -1,7 +1,9 @@
 # Composer 2.5 向け WBS
 
 親方針: [`../reusable-procedural-sfx-wasm_IMPLEMENTATION_PLAN.md`](../reusable-procedural-sfx-wasm_IMPLEMENTATION_PLAN.md)  
-単位系の正: [`../../reference/sfx-units-and-algorithm.md`](../../reference/sfx-units-and-algorithm.md)
+単位系の正: [`../../reference/sfx-units-and-algorithm.md`](../../reference/sfx-units-and-algorithm.md)  
+wavetable32 方針: [`../wavetable32_IMPLEMENTATION_PLAN.md`](../wavetable32_IMPLEMENTATION_PLAN.md)  
+wavetable32 設計決定: [`TW000-design-abi.md`](TW000-design-abi.md)
 
 実装は **1 タスクずつ** 渡す。この README を全部一度に実装してはいけない。
 
@@ -51,7 +53,32 @@ T530 WAV export          DONE
 T540 CLI mutate          DONE
 ```
 
+## wavetable32 実行順
+
+```text
+TW000 Design / ABI              DONE（Grok 4.6）
+TW010 Wavetable32 primitive     DONE
+TW020 WavetableBank             DONE
+TW030 oscillator integration    DONE
+TW040 Patch / ABI               DONE
+TW050 WASM bindings             DONE
+TW060 TS high-level API         DONE
+TW070 sample wavetables         DONE
+TW071 example UI                DONE
+TW072 README / reference        DONE
+TW080 regression                DONE
+```
+
 依存の要点:
+
+- TW は T540 完了後の別番号帯。既存 T000–T540 を再開しない
+- ABI は TW000 の決定に従う。21-float + WASM は 20/21 受理。Patch version は 1 のまま
+- TW010 は primitive のみ。Bank / synth / ABI を先回りしない
+- TW030 で C++ struct に `wavetableId` を足すが pack は TW040
+- TW050 まで WASM 登録なし。TW060 で名前付き API
+- Example / docs はコア（TW060）のあと
+
+## 既存タスクの依存の要点:
 
 - T040 は T050 の noise より前
 - T050〜T120 は **関数と単体テストだけ**。`render()` の無音スタブは T130 まで残す
