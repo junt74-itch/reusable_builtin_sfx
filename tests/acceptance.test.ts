@@ -220,7 +220,7 @@ describe("§21 acceptance criteria", () => {
     expect(readme.includes("bun run dev")).toBe(true);
     expect(readme.includes("bun run dev:phaser")).toBe(true);
     expect(readme.toLowerCase().includes("npm install reusable-procedural-sfx-wasm")).toBe(true);
-    expect(readme.includes("build:wasm` はフレームワークのリリース生成専用")).toBe(true);
+    expect(readme.includes("generated/sfx_synth.mjs` はリポジトリで追跡する生成済み WASM モジュール")).toBe(true);
   });
 
   test("npm packaging publishes the prebuilt distribution without consumer build hooks", async () => {
@@ -232,7 +232,7 @@ describe("§21 acceptance criteria", () => {
 
     expect(pkg.private).toBe(false);
     expect(pkg.files).toContain("dist");
-    expect(pkg.scripts?.prepack).toBe("bun run build");
+    expect(pkg.scripts?.prepack).toBe("bun run build:wasm && bun run build");
     expect(pkg.scripts?.postinstall).toBeUndefined();
     expect(pkg.scripts?.prepare).toBeUndefined();
   });

@@ -62,22 +62,22 @@ npm install reusable-procedural-sfx-wasm
 ## フレームワーク開発時の要件
 
 - **Bun** 1.3+
-- **Emscripten SDK 6.0.8**（`tooling/emsdk-version.txt`）
 - ネイティブ C++ テスト用に `g++` または `clang++`（任意）
 
-`build:wasm` はフレームワークのリリース生成専用です。`prepack` が `bun run build` を実行し、WASM を埋め込んだ `dist/index.js` と `dist/sfx_synth-*.js` を npm tarball に含めます。
+`generated/sfx_synth.mjs` はリポジトリで追跡する生成済み WASM モジュールです。そのため、新規 clone 後でも通常の開発・テスト・`dist/` ビルドで Emscripten は不要です。
+
+WASM を更新するフレームワーク保守者だけは **Emscripten SDK 6.0.8**（`tooling/emsdk-version.txt`）を用意して `bun run build:wasm` を実行します。公開時の `prepack` もこの再生成を行ったうえで、WASM を埋め込んだ `dist/index.js` と `dist/sfx_synth-*.js` を npm tarball に含めます。
 
 ## セットアップと確認
 
 ```bash
 bun install
-bun run setup:emsdk
 bun run dev            # vanilla 例 → http://localhost:5173/
 bun run dev:authoring  # 作者向けガチャ → http://localhost:5175/
 bun run check          # test + typecheck + build
 ```
 
-Emscripten は `EMSDK` 環境変数を設定するか、`bun run setup:emsdk` で 6.0.8 を入れてください。
+WASM を変更・再生成するときだけ、Emscripten は `EMSDK` 環境変数を設定するか、`bun run setup:emsdk` で 6.0.8 を入れてください。
 
 ## 例
 
@@ -126,7 +126,7 @@ bun run sfx mutate presets/ui.select.json --count 3 --out tmp/ui-select
 
 | コマンド | 内容 |
 | --- | --- |
-| `bun run build:wasm` | C++ → `generated/sfx_synth.mjs` |
+| `bun run build:wasm` | 保守者用: C++ → 追跡対象の `generated/sfx_synth.mjs` を更新 |
 | `bun run dev` | vanilla 例（port 5173） |
 | `bun run dev:phaser` | Phaser 4 例（port 5174） |
 | `bun run dev:authoring` | 作者向けガチャ（port 5175） |
@@ -135,8 +135,8 @@ bun run sfx mutate presets/ui.select.json --count 3 --out tmp/ui-select
 | `bun run sfx mutate <preset.json> --count N` | preset から変種 JSON を生成 |
 | `bun run test` | C++ テスト + TypeScript テスト |
 | `bun run typecheck` | `tsc --noEmit` |
-| `bun run build` | ライブラリ `dist/` をビルド |
-| `npm pack` | `prepack` 経由で、WASM 同梱の npm tarball を生成 |
+| `bun run build` | 生成済み WASM を使いライブラリ `dist/` をビルド |
+| `npm pack` | `prepack` で WASM を再生成し、同梱済み npm tarball を生成 |
 | `bun run check` | test + typecheck + build |
 
 ## 非目標
